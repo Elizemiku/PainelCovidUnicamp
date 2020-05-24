@@ -1,1 +1,7 @@
 theme: jekyll-theme-architect
+navbar:
+  right:
+    - icon: fa-envelope
+      text: "Contato"
+      href: e170409@dac.unicamp.br 
+            vinicius.n.o@outlook.com.br
