@@ -3,6 +3,7 @@ library(tidyverse)
 library(wordcloud2)
 library(httpuv)
 
+# tutorial
 api_key <- "QVbudD80ms2yc0FyOrzSd74Jq"
 api_secret_key <- "G8XGjoY91NoZ42fcweONb9iKmXLe0WkLf8U4ReeK4smDaFnk8x"
 access_token <- "143947934-hy5cYTCLZ14rW0UngS23sZeDNMI4TFS28xCDhsqA"
