@@ -29,6 +29,12 @@ library("flexdashboard")
 library("shiny")
 ```
 
+```{r}
+#Dados da Covid-19 no Estado de SP
+link <- "https://raw.githubusercontent.com/seade-R/dados-covid-sp/master/data/dados_covid_sp.csv"
+covid <- read_csv2(link)
+```
+
 Análise de dados 
 =====================================  
 
@@ -71,9 +77,12 @@ Outputs
 
 ```{r}
 renderPlotly({
-  teste <- ggplot(data=ChickWeight, aes(x=Time, y=weight, 
-                                        color=Diet, group=Chick)) +
-  geom_line() + ggtitle("Growth curve for individual chicks")
+ teste <- covid %>% 
+  filter(nome_munic == "Campinas") %>% 
+  ggplot(aes(x = semana_epidem, y = casos)) +
+  geom_line(col = "red") +
+  labs(title = "Covid-19 em Campinas", subtitle = "Por semanas epideomiológicas") +
+  theme_bw()
 
 teste <- ggplotly(teste)  
   
