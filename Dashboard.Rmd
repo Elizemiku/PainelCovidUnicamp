@@ -1,0 +1,94 @@
+---
+title: "Painel Covid AM091"
+date: "`r format(Sys.time(), '%d/%m/%Y')`"
+runtime: shiny
+output: 
+  flexdashboard::flex_dashboard:
+    orientation: columns
+    source_code: embed
+    social: menu
+    theme: cosmo 
+    navbar:  
+      - {title: "Covid-R.M.Campinas", icon: glyphicon-signal, href: https://covid-rmc.netlify.app}
+      - {title: "Github", icon: fa-github, href: https://github.com/Elizemiku/PainelCovidUnicamp}
+---
+
+```{r}
+options(knitr.duplicate.label = 'allow', dplyr.summarise.inform = FALSE)
+knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
+```
+
+<!-- podemos criar um chunk pegando os codigos do twitter de um R script depois -->
+
+```{r setup, include=FALSE}
+library("tidyverse")
+library("plotly")
+library("knitr")
+library("lubridate")
+library("flexdashboard")
+library("shiny")
+```
+
+Análise de dados 
+=====================================  
+
+Inputs {.sidebar}
+-----------------------------------------------------------------------
+
+teste 
+
+```{r}
+ selectInput("Dados", label = h4("Dados utilizados nas análises"), 
+    choices = c("covid","dengue"), 
+    selected = c("covid","dengue"),
+    multiple = TRUE)
+
+ selectInput("Cidades", label = h4("Cidades"), 
+    choices = c("Campinas","São Paulo"), 
+    selected = "Campinas",
+    multiple = TRUE)
+
+ selectInput("Graficos", label = h4("Gráficos"), 
+    choices = c("Barras","Linhas"), 
+    selected = "Linhas",
+    multiple = FALSE)
+
+selectInput("ObitosCasos", label = h4("Obitos e casos"), 
+    choices = c("Obitos","Casos"), 
+    selected = "Obitos",
+    multiple = FALSE)
+
+selectInput("twitter", label = h4("Escolha a pessoa do twitter"), 
+    choices = c("Bolsonaro","Dilma"), 
+    selected = "Bolsonaro",
+    multiple = FALSE)
+```
+
+Outputs
+-----------------------------------------------------------------------
+
+### Grafico de linhas 
+
+```{r}
+renderPlotly({
+  teste <- ggplot(data=ChickWeight, aes(x=Time, y=weight, 
+                                        color=Diet, group=Chick)) +
+  geom_line() + ggtitle("Growth curve for individual chicks")
+
+teste <- ggplotly(teste)  
+  
+teste   
+})
+
+```
+
+
+Explorar
+=====================================  
+
+Nuvem de Palavras
+=====================================  
+
+Sobre
+=====================================  
+
