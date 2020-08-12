@@ -27,6 +27,7 @@ library("knitr")
 library("lubridate")
 library("flexdashboard")
 library("shiny")
+library("shinyWidgets")
 ```
 
 ```{r}
@@ -41,18 +42,20 @@ Análise de dados
 Inputs {.sidebar}
 -----------------------------------------------------------------------
 
-teste 
 
 ```{r}
- selectInput("Dados", label = h4("Dados utilizados nas análises"), 
+selectInput("Dados", label = h4("Dados utilizados nas análises"), 
     choices = c("covid","dengue"), 
     selected = c("covid","dengue"),
     multiple = TRUE)
 
- selectInput("Cidades", label = h4("Cidades"), 
-    choices = c("Campinas","São Paulo"), 
-    selected = "Campinas",
-    multiple = TRUE)
+# seleção das Cidades
+selectInput(
+  inputId = "nome_munic", 
+  label = "Cidades", 
+  choices = c(covid$nome_munic),
+  multiple = TRUE,
+  selected = "Campinas")
 
  selectInput("Graficos", label = h4("Gráficos"), 
     choices = c("Barras","Linhas"), 
@@ -73,24 +76,26 @@ selectInput("twitter", label = h4("Escolha a pessoa do twitter"),
 Outputs
 -----------------------------------------------------------------------
 
-### Grafico de linhas 
+### Grafico 1 
 
 ```{r}
-renderPlotly({
- teste <- covid %>% 
-  filter(nome_munic == "Campinas") %>% 
-  ggplot(aes(x = semana_epidem, y = casos)) +
-  geom_line(col = "red") +
-  labs(title = "Covid-19 em Campinas", subtitle = "Por semanas epideomiológicas") +
-  theme_bw()
-
-teste <- ggplotly(teste)  
-  
-teste   
+# filtro reativo das cidades 
+filtro_cidades <- reactive({
+  covid %>%  filter(nome_munic %in% input$nome_munic)
 })
 
-```
+renderPlotly({
 
+ggplotly(
+  ggplot(filtro_cidades(), 
+         aes(x = semana_epidem, y = casos, color= nome_munic)) +
+  geom_line() +
+  labs(title = "Covid-19 por Cidade", subtitle = "Por semanas epideomiológicas") +
+  theme_bw()
+  )
+
+})
+```
 
 Explorar
 =====================================  
