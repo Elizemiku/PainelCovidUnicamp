@@ -23,8 +23,6 @@ knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
 ```{r setup, include=FALSE}
 library("tidyverse")
 library("plotly")
-library("knitr")
-library("lubridate")
 library("flexdashboard")
 library("shiny")
 library("shinyWidgets")
@@ -115,10 +113,10 @@ renderPlotly({
 
 ```
 
-Explorar
+Evolução (Gráfico animado)
 =====================================  
 
-Nuvem de Palavras
+Nuvem de palavras das autoridades
 =====================================  
 
 Sobre
