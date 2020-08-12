@@ -76,7 +76,7 @@ selectInput("twitter", label = h4("Escolha a pessoa do twitter"),
 Outputs
 -----------------------------------------------------------------------
 
-### Grafico 1 
+### Grafico de Casos de Covid
 
 ```{r}
 # filtro reativo das cidades 
@@ -86,15 +86,29 @@ filtro_cidades <- reactive({
 
 renderPlotly({
 
-ggplotly(
-  ggplot(filtro_cidades(), 
-         aes(x = semana_epidem, y = casos, color= nome_munic)) +
-  geom_line() +
-  labs(title = "Covid-19 por Cidade", subtitle = "Por semanas epideomiológicas") +
-  theme_bw()
-  )
-
+  if(input$Graficos == "Linhas"){
+    ggplotly(
+      ggplot(filtro_cidades(), 
+             aes(x = semana_epidem, y = casos, color= nome_munic)) +
+      geom_line() +
+      labs(title = "Covid-19 por Cidade", 
+           subtitle = "Por semanas epideomiológicas") +
+      theme_bw())
+  }
+  
+  # so um exemplo pra ver se funciona
+  else{
+    if(input$Graficos == "Barras"){
+    ggplotly(
+      ggplot(filtro_cidades(), 
+             aes(x = semana_epidem, y = casos, fill= nome_munic)) +
+      geom_bar(stat="identity", position = "dodge") +
+      theme_bw()) 
+      }
+  }
+  
 })
+
 ```
 
 Explorar
