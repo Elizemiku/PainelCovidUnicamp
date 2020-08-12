@@ -54,11 +54,11 @@ selectInput(
   inputId = "nome_munic", 
   label = "Cidades", 
   choices = c(covid$nome_munic),
-  multiple = TRUE,
-  selected = "Campinas")
+  selected = "Campinas",
+  multiple = TRUE)
 
  selectInput("Graficos", label = h4("Gráficos"), 
-    choices = c("Barras","Linhas"), 
+    choices = c("Barras","Linhas","Mapas"), 
     selected = "Linhas",
     multiple = FALSE)
 
@@ -104,7 +104,11 @@ renderPlotly({
              aes(x = semana_epidem, y = casos, fill= nome_munic)) +
       geom_bar(stat="identity", position = "dodge") +
       theme_bw()) 
+    }
+    else{
+      if(input$Graficos == "Mapas"){
       }
+    }
   }
   
 })
