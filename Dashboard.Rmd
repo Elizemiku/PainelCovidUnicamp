@@ -34,18 +34,14 @@ link <- "https://raw.githubusercontent.com/seade-R/dados-covid-sp/master/data/da
 covid <- read_csv2(link)
 ```
 
-Análise de dados 
+Covid {data-navmenu="Análise de dados" data-icon="glyphicon-asterisk"}
 =====================================  
 
 Inputs {.sidebar}
 -----------------------------------------------------------------------
 
-
 ```{r}
-selectInput("Dados", label = h4("Dados utilizados nas análises"), 
-    choices = c("covid","dengue"), 
-    selected = c("covid","dengue"),
-    multiple = TRUE)
+# tirei a opcao de escolher os dados porque podemos usar as abas das paginas para separar , ai depois vcs votam na melhor opcao haha
 
 # seleção das Cidades
 selectInput(
@@ -63,11 +59,6 @@ selectInput(
 selectInput("ObitosCasos", label = h4("Obitos e casos"), 
     choices = c("Obitos","Casos"), 
     selected = "Obitos",
-    multiple = FALSE)
-
-selectInput("twitter", label = h4("Escolha a pessoa do twitter"), 
-    choices = c("Bolsonaro","Dilma"), 
-    selected = "Bolsonaro",
     multiple = FALSE)
 ```
 
@@ -113,12 +104,22 @@ renderPlotly({
 
 ```
 
-Evolução (Gráfico animado)
+Evolução (Gráfico animado) {data-navmenu="Extra" data-icon="glyphicon-search"}
 =====================================  
 
-Nuvem de palavras das autoridades
+Nuvem de palavras das autoridades {data-navmenu="Extra" data-icon="fa-hashtag"}
 =====================================  
 
-Sobre
+Inputs {.sidebar}
+-----------------------------------------------------------------------
+
+```{r}
+selectInput("twitter", label = h4("Escolha a pessoa do twitter"), 
+    choices = c("Bolsonaro","Dilma"), 
+    selected = "Bolsonaro",
+    multiple = FALSE)
+```
+
+Sobre {data-icon="fa-info-circle"}
 =====================================  
 
