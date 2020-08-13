@@ -1,5 +1,5 @@
 ---
-title: "Painel Covid AM091"
+title: "Painel Covid - AM091"
 date: "`r format(Sys.time(), '%d/%m/%Y')`"
 runtime: shiny
 output: 
