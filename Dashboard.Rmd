@@ -1,17 +1,57 @@
 ---
-title: "Painel Covid - AM091"
+title: "Painel Covid Unicamp - AM091"
 date: "`r format(Sys.time(), '%d/%m/%Y')`"
 runtime: shiny
 output: 
   flexdashboard::flex_dashboard:
     orientation: columns
     source_code: embed
+    highlight: pygments
     social: menu
-    theme: cosmo 
     navbar:  
-      - {title: "Covid-R.M.Campinas", icon: glyphicon-signal, href: https://covid-rmc.netlify.app}
       - {title: "Github", icon: fa-github, href: https://github.com/Elizemiku/PainelCovidUnicamp}
 ---
+
+<!-- cores e estilos em html pra dashboard -->
+<!-- deixei branco mas se quiserem podemos mudar depois-->
+<style>
+
+.colored {
+background-color: #ffccff;
+}
+
+body {background-color: white;}
+.navbar {
+  class="navbar navbar-dark bg-primary";
+}
+
+.navbar-inverse .navbar-nav > li > a:hover,
+.navbar-inverse .navbar-nav > li > a:focus {
+    color: black;
+    background-color: #66a3ff;
+}
+
+.navbar-inverse .navbar-nav > .active > a,
+.navbar-inverse .navbar-nav > .active > a:hover,
+.navbar-inverse .navbar-nav > .active > a:focus {
+  color: black;
+  background-color:#66a3ff;
+}
+
+.navbar-inverse .navbar-toggle:hover,
+.navbar-inverse .navbar-toggle:focus {
+  background-color: #66a3ff;
+}
+
+.navbar-inverse .navbar-collapse,
+.navbar-inverse .navbar-form {
+  border-color: #66a3ff;
+}
+
+</style>
+
+
+<!-- codigo da dashboard -->
 
 ```{r}
 options(knitr.duplicate.label = 'allow', dplyr.summarise.inform = FALSE)
@@ -25,9 +65,9 @@ library("tidyverse")
 library("plotly")
 library("flexdashboard")
 library("shiny")
-library("shinyWidgets")
-library(geobr)
-library(gganimate)
+library("geobr")
+library("gganimate")
+library("rsconnect")
 ```
 
 ```{r, results='hide'}
@@ -35,6 +75,112 @@ library(gganimate)
 link <- "https://raw.githubusercontent.com/seade-R/dados-covid-sp/master/data/dados_covid_sp.csv"
 covid <- read_csv2(link)
 
+#Dados da Dengue
+
+
+#Dados da SRAG
+```
+
+Covid-19 {data-navmenu="Análise de dados" data-icon="fa-allergies"}
+=====================================  
+
+Inputs {.sidebar}
+-----------------------------------------------------------------------
+
+```{r}
+# tirei a opcao de escolher os dados porque podemos usar as abas das paginas para separar , ai depois vcs votam na melhor opcao haha
+
+# seleção das Cidades
+# seleção das Cidades
+selectInput(
+  inputId = "nome_munic", 
+  label = "Cidades", 
+  choices = c(covid$nome_munic),
+  selected = "Campinas",
+  multiple = TRUE)
+
+ selectInput(
+   inputId = "Graficos", 
+   label = "Gráficos", 
+   choices = c("Barras","Linhas"), 
+   selected = "Linhas",
+   multiple = FALSE)
+
+ selectInput(
+   inputId = "Opcao", 
+   label = "Opções", 
+   choices = c("semana_epidem","dia","mes"), 
+   selected = "seman_epidem",
+   multiple = FALSE)
+   
+selectInput(
+  inputId = "ObitosCasos", 
+  label = "Informação", 
+  choices = c("obitos","casos"), 
+  selected = "casos",
+  multiple = FALSE)
+```
+
+Outputs
+-----------------------------------------------------------------------
+
+### Grafico de Casos de Covid
+
+```{r}
+# filtro reativo das cidades 
+filtro_cidades <- reactive({
+  covid %>%  filter(nome_munic %in% input$nome_munic)
+})
+
+## Posso usar esse get pra transformar mas depois preciso mudar o eixo x
+## ver consegue automatizar o subtitulo
+## perguntar pro vini se esses graficos tao certos se a gente poe dia e mes mesmo
+output$plotly <- renderPlotly({
+
+  if(input$Graficos == "Linhas"){
+    ggplotly(
+      ggplot(filtro_cidades(), 
+             aes(x= get(input$Opcao), 
+                 y = get(input$ObitosCasos), 
+                 color =  nome_munic)) +
+      geom_line() +
+      labs(title = "Covid-19 por Cidade", 
+           subtitle = "Por semanas epideomiológicas") +
+      theme_bw())
+  }
+  
+  # so um exemplo pra ver se funciona
+  else if(input$Graficos == "Barras"){
+    ggplotly(
+      ggplot(filtro_cidades(), 
+             aes(x = dia, y = casos, fill= nome_munic)) +
+      geom_bar(stat="identity", position = "dodge") +
+      theme_bw()) 
+    }
+})
+
+plotlyOutput('plotly')
+
+```
+
+Covid e outras doenças {data-navmenu="Análise de dados" data-icon="fa-search"}
+=====================================  
+
+Covid-19 {data-navmenu="Dados utilizados"  data-icon="fa-notes-medical"}
+===================================== 
+
+Dengue {data-navmenu="Dados utilizados" data-icon="fa-notes-medical"}
+===================================== 
+
+SRAG {data-navmenu="Dados utilizados" data-icon="fa-notes-medical"}
+===================================== 
+
+Evolução (Mapa animado) {data-navmenu="Extras" data-icon="fa-map-marker"}
+=====================================  
+
+<!-- coloquei aqui pra ficar mais organizado  -->
+
+```{r, results='hide'}
 #Shapefile do estado de SP com divisão de municípios
 mapa <- read_municipality(code_muni = 35, year = 2018)
 
@@ -75,82 +221,23 @@ mapa_ani <- ggplot(evolucao_casos) +
   labs(title = "Evolução da Covid-19 em São Paulo")
 
 #Vou mexer mais na animação amanhã 
+
+
+
+
+
+
+# output$mapa_animado <- renderImage({
+# 
+#     mapa_ani 
+# 
+# })
+# 
+# imageOutput('mapa_animado')
 ```
 
-Covid {data-navmenu="Análise de dados" data-icon="glyphicon-asterisk"}
-=====================================  
 
-Inputs {.sidebar}
------------------------------------------------------------------------
-
-```{r}
-# tirei a opcao de escolher os dados porque podemos usar as abas das paginas para separar , ai depois vcs votam na melhor opcao haha
-
-# seleção das Cidades
-selectInput(
-  inputId = "nome_munic", 
-  label = "Cidades", 
-  choices = c(covid$nome_munic),
-  selected = "Campinas",
-  multiple = TRUE)
-
- selectInput("Graficos", label = h4("Gráficos"), 
-    choices = c("Barras","Linhas","Mapas"), 
-    selected = "Linhas",
-    multiple = FALSE)
-
-selectInput("ObitosCasos", label = h4("Obitos e casos"), 
-    choices = c("Obitos","Casos"), 
-    selected = "Obitos",
-    multiple = FALSE)
-```
-
-Outputs
------------------------------------------------------------------------
-
-### Grafico de Casos de Covid
-
-```{r}
-# filtro reativo das cidades 
-filtro_cidades <- reactive({
-  covid %>%  filter(nome_munic %in% input$nome_munic)
-})
-
-renderPlotly({
-
-  if(input$Graficos == "Linhas"){
-    ggplotly(
-      ggplot(filtro_cidades(), 
-             aes(x = semana_epidem, y = casos, color= nome_munic)) +
-      geom_line() +
-      labs(title = "Covid-19 por Cidade", 
-           subtitle = "Por semanas epideomiológicas") +
-      theme_bw())
-  }
-  
-  # so um exemplo pra ver se funciona
-  else{
-    if(input$Graficos == "Barras"){
-    ggplotly(
-      ggplot(filtro_cidades(), 
-             aes(x = semana_epidem, y = casos, fill= nome_munic)) +
-      geom_bar(stat="identity", position = "dodge") +
-      theme_bw()) 
-    }
-    else{
-      if(input$Graficos == "Mapas"){
-      }
-    }
-  }
-  
-})
-
-```
-
-Evolução (Gráfico animado) {data-navmenu="Extra" data-icon="glyphicon-search"}
-=====================================  
-
-Nuvem de palavras das autoridades {data-navmenu="Extra" data-icon="fa-hashtag"}
+Nuvem de palavras das autoridades {data-navmenu="Extras" data-icon="fa-hashtag"}
 =====================================  
 
 Inputs {.sidebar}
