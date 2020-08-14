@@ -30,7 +30,7 @@ library(geobr)
 library(gganimate)
 ```
 
-```{r}
+```{r, results='hide'}
 #Dados da Covid-19 no Estado de SP
 link <- "https://raw.githubusercontent.com/seade-R/dados-covid-sp/master/data/dados_covid_sp.csv"
 covid <- read_csv2(link)
