@@ -26,12 +26,55 @@ library("plotly")
 library("flexdashboard")
 library("shiny")
 library("shinyWidgets")
+library(geobr)
+library(gganimate)
 ```
 
 ```{r}
 #Dados da Covid-19 no Estado de SP
 link <- "https://raw.githubusercontent.com/seade-R/dados-covid-sp/master/data/dados_covid_sp.csv"
 covid <- read_csv2(link)
+
+#Shapefile do estado de SP com divisão de municípios
+mapa <- read_municipality(code_muni = 35, year = 2018)
+
+#Pegando somente as regiões de saúde
+regioes <- covid %>% drop_na() %>% select(nome_drs) %>% unique() %>% unlist() %>% unname()
+#Adiciono Santos e São Paulo, pois suas regiões estão como baixada santista e grande São Paulo
+regioes <- c(regioes, "Santos", "São Paulo")
+
+#Crio um df com o nome do município + coordenadas
+covid_regioes <- covid %>% 
+  drop_na() %>% 
+  select(nome_munic, latitude, longitude) %>% 
+  filter(nome_munic %in% regioes) %>% 
+  unique()
+
+#Crio um df com o total da covid (casos e óbitos) por data e por região.
+evolucao_casos <- covid %>% 
+  group_by(datahora, nome_drs) %>% 
+  summarise(casos_regiao = sum(casos), pop_regiao = sum(pop), obitos_regiao = sum(obitos)) %>%
+  ungroup() %>% 
+  #Altero o nome das regiões para as referentes cidades antes da junção dos dados
+  mutate(nome_drs = replace(nome_drs, nome_drs == "Grande São Paulo", "São Paulo")) %>% 
+  mutate(nome_drs = replace(nome_drs, nome_drs == "Baixada Santista", "Santos")) %>% 
+  left_join(covid_regioes, by = c("nome_drs" = "nome_munic")) %>% 
+  drop_na()
+
+#Mapa
+mapa_ani <- ggplot(evolucao_casos) + 
+  geom_sf(data = mapa, fill = "cyan4", color="black", size=.15, ) +
+  geom_point(aes(x = longitude, y = latitude, group = nome_drs, 
+                 size = 100000*(casos_regiao/pop_regiao),
+                 color = 100000*(casos_regiao/pop_regiao)), alpha = .5) +
+  scale_size_continuous(range = c(4, 12)) +
+  scale_color_gradient(low = "darkgoldenrod1", high = "brown3")+
+  guides(color=guide_legend(title = "Casos por 100.000 hab."), 
+         size = guide_legend(title = "Casos por 100.000 hab."))+
+  theme_void()+
+  labs(title = "Evolução da Covid-19 em São Paulo")
+
+#Vou mexer mais na animação amanhã 
 ```
 
 Covid {data-navmenu="Análise de dados" data-icon="glyphicon-asterisk"}
