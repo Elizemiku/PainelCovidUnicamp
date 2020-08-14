@@ -29,34 +29,25 @@ gov <- c("jairbolsonaro", "jdoriajr", "wilsonwitzel")
 google_maps_token <- "AIzaSyCKUhjZ8bDE6cDGiewgrv0WBFBDRRXoi84"
 
 #Procurar por localização (acho que só funciona pra país ou capitais)
-sp <- search_tweets("", 
-                    geocode = lookup_coords(address = "São Paulo", 
-                                            components = "country:Brazil",
-                                            apikey = "AIzaSyCKUhjZ8bDE6cDGiewgrv0WBFBDRRXoi84",
-                                            n = 100)) 
+sp <- search_tweets("isabella", geocode = lookup_coords("brazil",apikey = google_maps_token),
+                    n=100) 
 
 #Ex: Procurar filtrando Latitude,Longitude,Raio
-sp_cidade <- search_tweets("show", 
-                           geocode = "-23.55,-46.63,1mi", n = 100)
-
-#Se fossemos plotar um gráfico (em desenvolvimento)
-# sp <- lat_lng(sp)
-# library(geobr)
-# mapa_sp <- read_municipality(code_muni = "SP")
-# 
-# ggplot() +
-#   geom_sf(data = mapa_sp, fill="darkolivegreen4", color="black") + 
-#   geom_point(data = sp, aes(x = sp$lat, y = sp$lng), col = "deepskyblue4")+
-#   theme_bw()
 
 #Palavras de interesse
-dicionario <- c("corona",  "covid", "quarentena", 
-                "lockdown", "cloroquina", "casos", 
-                "ministros" ,"colapso", "respiradores",
-                "isolamento horizontal", "isolamento vertical", "quarentena") 
+dicionario <- c('corona',  'covid', 'quarentena', 'lockdown', 'cloroquina', 'casos', 'ministros' ,'colapso','respiradores','isolamento horizontal','isolamento vertical','quarentena','hospital','campanha','isolamento social','distanciamento social,'máscara','epidemia','pandemia','contágio','confinamento','assintomático','OMS','saúde pública','pico','UTI','comorbidade','obesidade','diabete','doenças respiratórias','doenças do coração','cardíacos','diabéticos','pneumonia','vacina','casa','idosos','crianças','medidas','economia','Manaus','São Paulo','Rio de Janeiro','febre','dor de cabeça','saudade','luto','mortes','óbitos','aglomeração','casos graves','suspeita','casos confirmados','testes','subnotificação','solidariedade','doações','cestas básicas','risco','epicentro','comércio','home office','hospitais de campanha', 'auxílio emergencial','fique em casa','desemprego','empresários','Brasil','China','Itália','Estados Unidos','Espanha','França','suspensão do contrato de trabalho','leitos','países','infecção','contágio','contaminados','países','casos notificados','casos confirmados','casos descartados','pacientes curados','ciência','médicos','medicina','pesquisadores','salário','distanciamento','governadores','dinheiro público',sus','corrupção','responsabilidade','achatamento da curva','estatísticas','mortalidade','letalidade','transporte público','rodízio','lotação','enfermeiros','hidroxicloroquina','gripezinha','clima','cardiovascular','crise sanitária','cloroquina','álcool','lavar as mãos','medidas', 'caos social', 'fome', 'violência doméstica','cidades','favelas','microempresas','microempresário','funcionários','funcionários público','Suécia','depressão','escolas','shoppings','afastamento') 
+
+
+
+tweets_brazil <- search_tweets(dicionario, 
+                           geocode = "-10,-55,600mi", n = 100)
+
+contas <- c(colocar os @@@@@@)
+
+#Palavras de interesse
 
 #Pegar a timeline
-b <- get_timeline("jairbolsonaro", n = 15)
+b <- get_timeline(contas, n=1000)
 
 #Pegar a coluna com conteúdo de texto
 texto <- b$text
