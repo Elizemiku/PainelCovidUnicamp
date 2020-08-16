@@ -154,12 +154,17 @@ Outputs
 ```{r}
 # filtro reativo das cidades 
 filtro_cidades <- reactive({
-  covid %>%  filter(Cidade %in% input$Cidade)
+  # if(input$Opcao == "dia"){
+  #   covid %>%  filter(Cidade %in% input$Cidade) %>%
+  #     group_by(dia, mes) 
+  # } 
+  # else{
+  
+    covid %>%  filter(Cidade %in% input$Cidade) 
+    
 })
 
-## Posso usar esse get pra transformar mas depois preciso mudar o eixo x
-## ver consegue automatizar o subtitulo
-## perguntar pro vini se esses graficos tao certos se a gente poe dia e mes mesmo
+# graficos 
 output$plotly <- renderPlotly({
 
   if(input$Graficos == "Linhas"){
@@ -194,7 +199,7 @@ plotlyOutput('plotly')
 Covid e outras doenças {data-navmenu="Análise de dados" data-icon="fa-search"}
 =====================================  
 
-Covid-19 {data-navmenu="Dados utilizados"  data-icon="fa-notes-medical" }
+Covid-19 {data-navmenu="Dados utilizados"  data-icon="fa-notes-medical"}
 ===================================== 
 
 ```{r}
