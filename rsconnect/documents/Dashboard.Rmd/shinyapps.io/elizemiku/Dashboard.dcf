@@ -5,8 +5,8 @@ account: elizemiku
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 2671453
-bundleId: 3522966
+bundleId: 3522990
 url: https://elizemiku.shinyapps.io/Dashboard/
-when: 1597615453.04494
+when: 1597615936.30674
 asMultiple: FALSE
 asStatic: FALSE
