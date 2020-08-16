@@ -21,10 +21,12 @@ output:
 .colored {
 background-color: #ffccff;
 } 
+
 .first-box {
   background-color: #ffccff;
   color: black;
 }
+
 body {background-color: white;}
 .navbar {
   class="navbar navbar-dark bg-primary";
@@ -68,24 +70,28 @@ library("geobr")
 library("gganimate")
 library("rsconnect")
 
-# opcoes das tabelas DT e do codigo
-options(knitr.duplicate.label = 'allow', 
-        dplyr.summarise.inform = FALSE,
-        DT.options = list(
-          initComplete = JS(
-            "function(settings, json) 
-            {","$(this.api().table().header()).css({'background-color': '#1d80e2  ',
-            'color': 'white'});","}"
-            ),
-          pageLength = 5,
-          language = list(search = 'Busca:'),
-          lengthMenu = c(5, 10, 15, 20)
-))
+# opcoes das tabelas DT, caso usemos e do codigo
+# options(knitr.duplicate.label = 'allow', 
+#         dplyr.summarise.inform = FALSE,
+#         DT.options = list(
+#           initComplete = JS(
+#             "function(settings, json) 
+#             {","$(this.api().table().header()).css({'background-color': '#1d80e2  ',
+#             'color': 'white'});","}"
+#             ),
+#           pageLength = 5,
+#           language = list(search = 'Busca:'),
+#           lengthMenu = c(5, 10, 15, 20)
+# ))
 
 knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
 ```
 
-<!-- podemos criar um chunk pegando os codigos do twitter de um R script depois -->
+<!-- podemos criar um chunk pegando os codigos do twitter do R script  -->
+
+```{r code = readLines("rtweet_ex.R") , echo = FALSE, eval = FALSE}
+# coloquei eval pra nao rodar por enquanto
+```
 
 ```{r, results='hide'}
 #Dados da Covid-19 no Estado de SP
@@ -111,7 +117,6 @@ Inputs {.sidebar}
 -----------------------------------------------------------------------
 
 ```{r}
-# tirei a opcao de escolher os dados porque podemos usar as abas das paginas para separar , ai depois vcs votam na melhor opcao haha
 
 # seleção das Cidades
 selectInput(
@@ -144,6 +149,7 @@ selectInput(
   choices = c("óbitos","casos", "casos_novos", "óbitos_novos"), 
   selected = "casos",
   multiple = FALSE)
+
 ```
 
 Outputs
@@ -153,7 +159,10 @@ Outputs
 
 ```{r}
 # filtro reativo das cidades 
+
 filtro_cidades <- reactive({
+  
+  # ver o que fazer com a variavel dias
   # if(input$Opcao == "dia"){
   #   covid %>%  filter(Cidade %in% input$Cidade) %>%
   #     group_by(dia, mes) 
@@ -168,6 +177,8 @@ filtro_cidades <- reactive({
 output$plotly <- renderPlotly({
 
   if(input$Graficos == "Linhas"){
+    # grafico de linhas interativo
+    # numero de opcoes do eixo y por opcoes do eixo x
     ggplotly(
       ggplot(filtro_cidades(), 
              aes_string(x = input$Opcao, y = input$ObitosCasos)) +
@@ -180,6 +191,8 @@ output$plotly <- renderPlotly({
   }
   
   else if(input$Graficos == "Barras"){
+    # grafico de barras interativo
+    # numero de opcoes do eixo y por opcoes do eixo x
     ggplotly(
       ggplot(filtro_cidades(), 
              aes_string(x = input$Opcao, y = input$ObitosCasos)) +
@@ -203,6 +216,8 @@ Covid-19 {data-navmenu="Dados utilizados"  data-icon="fa-notes-medical"}
 ===================================== 
 
 ```{r}
+
+# tabela dados de covid de campinas 
 # datatable(
 #   covid %>% filter(Cidade == "Campinas"),
 #   colnames = c('ID' = 1),
@@ -299,11 +314,22 @@ Inputs {.sidebar}
 -----------------------------------------------------------------------
 
 ```{r}
-selectInput("twitter", label = h4("Escolha a pessoa do twitter"), 
+# colocar em choices o dicionario que esta em rtweet_ex.R
+selectInput("twitter", label = "Escolha a pessoa do twitter", 
     choices = c("Bolsonaro","Dilma"), 
     selected = "Bolsonaro",
     multiple = FALSE)
 ```
+
+Outputs
+-----------------------------------------------------------------------
+
+```{r}
+# chamar o codigo do twitter aqui 
+# grafico 
+# nuvem_de_palavras
+```
+
 
 Sobre {data-icon="fa-info-circle"}
 =====================================  

@@ -67,7 +67,7 @@ contas <- c("jairbolsonaro","jdoriajr","wilsonwitzel","RomeuZema","EduardoLeite_
             CarlosMoises","CamiloSantanaCE","PauloCamara40","ratinho_jr","ronaldocaiado","helderbarbalho",
             "FlavioDino","wdiaspi","joaoazevedolins","MauroMendes40","belivaldochagas","Casagrande_ES",
             "RenanFilho_","GovernoAlagoas","gladsoncameli","maurocarlesse","GovernoRO","celmarcosrocha",
-            "Reinaldo45psdb","waldezoficial","antoniodenarium","AbrahamWeint","DamaresAlves","rsallesmma"
+            "Reinaldo45psdb","waldezoficial","antoniodenarium","AbrahamWeint","DamaresAlves","rsallesmma",
             "PauloGuedesMin","TerezaCrisMS","SF_Moro","tarcisiogdf","OsmarTerra","indaiatubapref",
             "prefpauliniasp","prefsp","sumaresp","pref_sorocaba","onasdonizette_")
 
@@ -89,7 +89,7 @@ texto2 <- paste(unlist(texto), collapse = " ")
 df <- tibble(word = dicionario, freq = str_count(texto2, dicionario))
 
 #(Pesquisar outros argumentos)
-wordcloud2(df)
+nuvem_de_palavras <- wordcloud2(df)
 
 
 
