@@ -1,25 +1,30 @@
 ---
 title: "Painel Covid Unicamp - AM091"
-date: "`r format(Sys.time(), '%d/%m/%Y')`"
 runtime: shiny
 output: 
   flexdashboard::flex_dashboard:
     orientation: columns
+    vertical_layout: fill
     source_code: embed
     highlight: pygments
     social: menu
     navbar:  
       - {title: "Github", icon: fa-github, href: https://github.com/Elizemiku/PainelCovidUnicamp}
+    includes:
+      after_body: footer.html
 ---
 
 <!-- cores e estilos em html pra dashboard -->
 <!-- deixei branco mas se quiserem podemos mudar depois-->
-<style>
 
+<style>
 .colored {
 background-color: #ffccff;
+} 
+.first-box {
+  background-color: #ffccff;
+  color: black;
 }
-
 body {background-color: white;}
 .navbar {
   class="navbar navbar-dark bg-primary";
@@ -47,33 +52,51 @@ body {background-color: white;}
 .navbar-inverse .navbar-form {
   border-color: #66a3ff;
 }
-
 </style>
 
 
 <!-- codigo da dashboard -->
 
-```{r}
-options(knitr.duplicate.label = 'allow', dplyr.summarise.inform = FALSE)
+```{r setup, include=FALSE}
+# bibliotecas utilizadas 
+library("tidyverse")
+library("plotly")
+library("flexdashboard")
+library("DT")
+library("shiny")
+library("geobr")
+library("gganimate")
+library("rsconnect")
+
+# opcoes das tabelas DT e do codigo
+options(knitr.duplicate.label = 'allow', 
+        dplyr.summarise.inform = FALSE,
+        DT.options = list(
+          initComplete = JS(
+            "function(settings, json) 
+            {","$(this.api().table().header()).css({'background-color': '#1d80e2  ',
+            'color': 'white'});","}"
+            ),
+          pageLength = 5,
+          language = list(search = 'Busca:'),
+          lengthMenu = c(5, 10, 15, 20)
+))
+
 knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
 ```
 
 <!-- podemos criar um chunk pegando os codigos do twitter de um R script depois -->
 
-```{r setup, include=FALSE}
-library("tidyverse")
-library("plotly")
-library("flexdashboard")
-library("shiny")
-library("geobr")
-library("gganimate")
-library("rsconnect")
-```
-
 ```{r, results='hide'}
 #Dados da Covid-19 no Estado de SP
 link <- "https://raw.githubusercontent.com/seade-R/dados-covid-sp/master/data/dados_covid_sp.csv"
 covid <- read_csv2(link)
+
+# deixando o nome das colunas bonitinhos
+covid <- covid %>% 
+  rename("Semana_epidemiológica" = semana_epidem, 
+         "Cidade" = nome_munic, "mês" = mes, "óbitos" = obitos, 
+         "óbitos_novos" = obitos_novos)
 
 #Dados da Dengue
 
@@ -91,14 +114,14 @@ Inputs {.sidebar}
 # tirei a opcao de escolher os dados porque podemos usar as abas das paginas para separar , ai depois vcs votam na melhor opcao haha
 
 # seleção das Cidades
-# seleção das Cidades
 selectInput(
-  inputId = "nome_munic", 
+  inputId = "Cidade", 
   label = "Cidades", 
-  choices = c(covid$nome_munic),
+  choices = c(covid$Cidade),
   selected = "Campinas",
   multiple = TRUE)
 
+# seleção do tipo de gráfico
  selectInput(
    inputId = "Graficos", 
    label = "Gráficos", 
@@ -106,17 +129,19 @@ selectInput(
    selected = "Linhas",
    multiple = FALSE)
 
+# seleção do eixo x
  selectInput(
    inputId = "Opcao", 
    label = "Opções", 
-   choices = c("semana_epidem","dia","mes"), 
-   selected = "seman_epidem",
+   choices = c("Semana_epidemiológica","dia","mês"), 
+   selected = "Semana_epidemiológica",
    multiple = FALSE)
    
+# seleção do eixo y 
 selectInput(
   inputId = "ObitosCasos", 
   label = "Informação", 
-  choices = c("obitos","casos"), 
+  choices = c("óbitos","casos", "casos_novos", "óbitos_novos"), 
   selected = "casos",
   multiple = FALSE)
 ```
@@ -129,7 +154,7 @@ Outputs
 ```{r}
 # filtro reativo das cidades 
 filtro_cidades <- reactive({
-  covid %>%  filter(nome_munic %in% input$nome_munic)
+  covid %>%  filter(Cidade %in% input$Cidade)
 })
 
 ## Posso usar esse get pra transformar mas depois preciso mudar o eixo x
@@ -140,22 +165,25 @@ output$plotly <- renderPlotly({
   if(input$Graficos == "Linhas"){
     ggplotly(
       ggplot(filtro_cidades(), 
-             aes(x= get(input$Opcao), 
-                 y = get(input$ObitosCasos), 
-                 color =  nome_munic)) +
-      geom_line() +
-      labs(title = "Covid-19 por Cidade", 
-           subtitle = "Por semanas epideomiológicas") +
-      theme_bw())
+             aes_string(x = input$Opcao, y = input$ObitosCasos)) +
+      geom_line(aes(color =  Cidade)) +
+      labs(title = "Covid-19 por Cidade",
+           x = paste("Por", input$Opcao, sep = " "),
+           y = paste("Número de", input$ObitosCasos, sep = " ")) +
+      theme_bw()
+      ) 
   }
   
-  # so um exemplo pra ver se funciona
   else if(input$Graficos == "Barras"){
     ggplotly(
       ggplot(filtro_cidades(), 
-             aes(x = dia, y = casos, fill= nome_munic)) +
-      geom_bar(stat="identity", position = "dodge") +
-      theme_bw()) 
+             aes_string(x = input$Opcao, y = input$ObitosCasos)) +
+      geom_bar(stat="identity", position = "dodge", aes(fill = Cidade)) +
+      labs(title = "Covid-19 por Cidade", 
+           x = paste("Por", input$Opcao, sep = " "),
+           y = paste("Número de", input$ObitosCasos, sep = " ")) + 
+      theme_bw()
+      ) 
     }
 })
 
@@ -166,14 +194,36 @@ plotlyOutput('plotly')
 Covid e outras doenças {data-navmenu="Análise de dados" data-icon="fa-search"}
 =====================================  
 
-Covid-19 {data-navmenu="Dados utilizados"  data-icon="fa-notes-medical"}
+Covid-19 {data-navmenu="Dados utilizados"  data-icon="fa-notes-medical" }
 ===================================== 
+
+```{r}
+# datatable(
+#   covid %>% filter(Cidade == "Campinas"),
+#   colnames = c('ID' = 1),
+#   caption =  htmltools::tags$caption(
+#     style = 'caption-side: top; text-align: left; color:blue; font-size: 16px',
+#     'Tabela 1: ',
+#     htmltools::em('Dados da Covid-19 utilizados para as análises',)
+#   ),
+#   class = c('cell-border stripe'),
+#   extensions = c('Buttons'),
+#   options = list(dom = 'Bfrtip',
+#                  buttons = c('csv', 'excel', 'print'))
+# )
+```
 
 Dengue {data-navmenu="Dados utilizados" data-icon="fa-notes-medical"}
 ===================================== 
+```{r}
+
+```
 
 SRAG {data-navmenu="Dados utilizados" data-icon="fa-notes-medical"}
 ===================================== 
+```{r}
+
+```
 
 Evolução (Mapa animado) {data-navmenu="Extras" data-icon="fa-map-marker"}
 =====================================  
@@ -192,19 +242,19 @@ regioes <- c(regioes, "Santos", "São Paulo")
 #Crio um df com o nome do município + coordenadas
 covid_regioes <- covid %>% 
   drop_na() %>% 
-  select(nome_munic, latitude, longitude) %>% 
-  filter(nome_munic %in% regioes) %>% 
+  select(Cidade, latitude, longitude) %>% 
+  filter(Cidade %in% regioes) %>% 
   unique()
 
 #Crio um df com o total da covid (casos e óbitos) por data e por região.
 evolucao_casos <- covid %>% 
   group_by(datahora, nome_drs) %>% 
-  summarise(casos_regiao = sum(casos), pop_regiao = sum(pop), obitos_regiao = sum(obitos)) %>%
+  summarise(casos_regiao = sum(casos), pop_regiao = sum(pop), obitos_regiao = sum(`óbitos`)) %>%
   ungroup() %>% 
   #Altero o nome das regiões para as referentes cidades antes da junção dos dados
   mutate(nome_drs = replace(nome_drs, nome_drs == "Grande São Paulo", "São Paulo")) %>% 
   mutate(nome_drs = replace(nome_drs, nome_drs == "Baixada Santista", "Santos")) %>% 
-  left_join(covid_regioes, by = c("nome_drs" = "nome_munic")) %>% 
+  left_join(covid_regioes, by = c("nome_drs" = "Cidade")) %>% 
   drop_na()
 
 #Mapa
@@ -252,4 +302,12 @@ selectInput("twitter", label = h4("Escolha a pessoa do twitter"),
 
 Sobre {data-icon="fa-info-circle"}
 =====================================  
+
+Row
+--------------------------------------------------------------
+
+### Informações sobre este projeto { .first-box }
+
+Painel Covid Unicamp - AM091 é um site feito para o projeto da disciplina de AM091 da Universidade Estadual de Campinas. O objetivo desse projeto constituiu-se em aproximar os alunos Elizabeth, Isabella e Vinicius do curso de Estatística na aplicação da parte prática do conhecimento estatístico, com enfoque nos dados da Covid-19 do Brasil. Além de contribuir para a aprendizagem dos alunos também é uma contribuição para o país demonstrando que todos estão se dedicando nesse tempo de Pandemia.
+
 
