@@ -18,6 +18,7 @@ output:
 <!-- deixei branco mas se quiserem podemos mudar depois-->
 
 <style>
+
 .colored {
 background-color: #ffccff;
 } 
