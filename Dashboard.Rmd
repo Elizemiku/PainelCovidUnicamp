@@ -363,6 +363,15 @@ estatisticas_moveis <- function(x){
 sp_novos <- sp_novos %>% mutate(media_casos = estatisticas_moveis(.$novos_casos),
                                 media_óbitos = estatisticas_moveis(.$novos_óbitos))
 
+p1 <- ggplot(sp_novos, aes(x =datahora)) + 
+  geom_line(aes(y = novos_casos), alpha = 0.5, col = "darkorange") +
+  geom_line(aes(y = media_casos), col = "darkred", size = 1.5) +
+  theme_bw()
+
+p2 <- ggplot(sp_novos, aes(x =datahora)) + 
+  geom_line(aes(y = novos_óbitos), alpha = 0.5, col = "darkviolet") +
+  geom_line(aes(y = media_óbitos), col = "black", size = 1.5) +
+  theme_bw()
 ```
 
 
