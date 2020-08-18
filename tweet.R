@@ -20,17 +20,15 @@ token <- create_token(
 #Só autentifica 1x, depois pode pular pra essa parte
 get_token()
 
-#Governantes
-gov <- c("jairbolsonaro", "jdoriajr", "wilsonwitzel")
+
 
 #Quantas pessoas diferentes falaram isso
 #df$user_id %>% unique() %>% length()
 
 google_maps_token <- "AIzaSyCKUhjZ8bDE6cDGiewgrv0WBFBDRRXoi84"
 
-#Procurar por localização (acho que só funciona pra país ou capitais)
-sp <- search_tweets("isabella", geocode = lookup_coords("brazil",apikey = google_maps_token),
-                    n=100) 
+
+
 
 #Ex: Procurar filtrando Latitude,Longitude,Raio
 
@@ -60,21 +58,22 @@ dicionario <- c("corona", "covid", "quarentena", "lockdown", "cloroquina", "caso
 
 
 
-tweets_brazil <- search_tweets(dicionario, 
+tweets_brazil <- search_tweets(c("isa","indaiatuba"), 
                            geocode = "-10,-55,600mi", n = 100)
 
 contas <- c("jairbolsonaro","jdoriajr","wilsonwitzel","RomeuZema","EduardoLeite_","costa_rui","
             CarlosMoises","CamiloSantanaCE","PauloCamara40","ratinho_jr","ronaldocaiado","helderbarbalho",
             "FlavioDino","wdiaspi","joaoazevedolins","MauroMendes40","belivaldochagas","Casagrande_ES",
             "RenanFilho_","GovernoAlagoas","gladsoncameli","maurocarlesse","GovernoRO","celmarcosrocha",
-            "Reinaldo45psdb","waldezoficial","antoniodenarium","AbrahamWeint","DamaresAlves","rsallesmma",
+            "Reinaldo45psdb","waldezoficial","antoniodenarium","AbrahamWeint","DamaresAlves",
             "PauloGuedesMin","TerezaCrisMS","SF_Moro","tarcisiogdf","OsmarTerra","indaiatubapref",
-            "prefpauliniasp","prefsp","sumaresp","pref_sorocaba","onasdonizette_")
+            "prefpauliniasp","prefsp","sumaresp","pref_sorocaba","jonasdonizette_")
 
+teste <- c("jairbolsonaro","jdoriajr","wilsonwitzel","RomeuZema","EduardoLeite_")
 #Palavras de interesse
 
 #Pegar a timeline
-b <- get_timeline(contas, n=1000)
+system.time(get_timeline(teste, n=1000))
 
 #Pegar a coluna com conteúdo de texto
 texto <- b$text
@@ -89,7 +88,12 @@ texto2 <- paste(unlist(texto), collapse = " ")
 df <- tibble(word = dicionario, freq = str_count(texto2, dicionario))
 
 #(Pesquisar outros argumentos)
-nuvem_de_palavras <- wordcloud2(df)
+nuvem <- wordcloud2(df, size=1.6, color='random-light', backgroundColor="black")
+nuvem
+
+figPath = system.file("examples/t.png",package = "wordcloud2")
+
+wordcloud2(demoFreq, size=1.6, color='random-light', backgroundColor="black")
 
 
 

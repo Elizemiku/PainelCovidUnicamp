@@ -8,8 +8,10 @@ output:
     source_code: embed
     highlight: pygments
     social: menu
-    navbar:  
-      - {title: "Github", icon: fa-github, href: https://github.com/Elizemiku/PainelCovidUnicamp}
+    navbar: 
+    - title: Github
+      icon: fa-github
+      href: https://github.com/Elizemiku/PainelCovidUnicamp
     includes:
       after_body: footer.html
 ---
@@ -65,7 +67,6 @@ body {background-color: white;}
 library("tidyverse")
 library("plotly")
 library("flexdashboard")
-library("DT")
 library("shiny")
 library("geobr")
 library("gganimate")
