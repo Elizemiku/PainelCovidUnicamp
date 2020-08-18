@@ -91,7 +91,8 @@ knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
 
 <!-- podemos criar um chunk pegando os codigos do twitter do R script  -->
 
-```{r code = readLines("rtweet_ex.R") , echo = FALSE, eval = FALSE}
+```{r , echo = FALSE, eval = FALSE}
+#code = readLines("rtweet_ex.R")
 # coloquei eval pra nao rodar por enquanto
 ```
 
@@ -247,13 +248,20 @@ SRAG {data-navmenu="Dados utilizados" data-icon="fa-notes-medical"}
 
 ```
 
-Evolução (Mapa animado) {data-navmenu="Extras" data-icon="fa-map-marker"}
+Total de notificações {data-navmenu="Gráficos animados" data-icon="fa-map-marker" data-width=800 data-height=400}
 =====================================  
 
-<img src="https://raw.githubusercontent.com/Elizemiku/PainelCovidUnicamp/master/dados/evolucao.gif" alt="mapa" width="800" height = 400/>
+<img src="https://raw.githubusercontent.com/Elizemiku/PainelCovidUnicamp/master/dados/evolucao.gif" alt="mapa"/>
 
+Incidência da Covid-19 {data-navmenu="Gráficos animados" data-icon="fa-hashtag"}
+=====================================  
+<img src="https://raw.githubusercontent.com/Elizemiku/PainelCovidUnicamp/master/dados/casos.gif" alt="incidencia"/>
 
-Nuvem de palavras das autoridades {data-navmenu="Extras" data-icon="fa-hashtag"}
+Mortes diárias por Covid-19 {data-navmenu="Gráficos animados" data-icon="fa-hashtag"}
+=====================================  
+<img src="https://raw.githubusercontent.com/Elizemiku/PainelCovidUnicamp/master/dados/mortes.gif" alt="obitos"/>
+
+Nuvem de palavras dinâmica {data-icon="fa-info-circle"}
 =====================================  
 
 Inputs {.sidebar}
