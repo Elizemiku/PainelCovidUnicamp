@@ -2,6 +2,7 @@ library(rtweet)
 library(tidyverse)
 library(wordcloud2)
 library(httpuv)
+library(shiny)
 
 #Keys de acesso
 api_key <- "QVbudD80ms2yc0FyOrzSd74Jq"
@@ -58,7 +59,7 @@ dicionario <- c("corona", "covid", "quarentena", "lockdown", "cloroquina", "caso
 
 
 
-tweets_brazil <- search_tweets(c("isa","indaiatuba"), 
+tweets_brazil <- search_tweets(c("isa","indaiatuba"),
                            geocode = "-10,-55,600mi", n = 100)
 
 contas <- c("jairbolsonaro","jdoriajr","wilsonwitzel","RomeuZema","EduardoLeite_","costa_rui","
@@ -70,7 +71,7 @@ contas <- c("jairbolsonaro","jdoriajr","wilsonwitzel","RomeuZema","EduardoLeite_
             "prefpauliniasp","prefsp","sumaresp","pref_sorocaba","jonasdonizette_")
 
 teste <- c("jairbolsonaro","jdoriajr","wilsonwitzel","RomeuZema")
-#Palavras de interesse
+# Palavras de interesse
 
 #Pegar a timeline
 get_timeline(teste, n=1000)
@@ -90,7 +91,6 @@ df <- tibble(word = dicionario, freq = str_count(texto2, dicionario))
 #(Pesquisar outros argumentos)
 nuvem <- wordcloud2(df, size=1.6, color='random-light', backgroundColor="black")
 nuvem
-
 
 
 
