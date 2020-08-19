@@ -59,8 +59,6 @@ dicionario <- c("corona", "covid", "quarentena", "lockdown", "cloroquina", "caso
 
 
 
-tweets_brazil <- search_tweets(c("isa","indaiatuba"),
-                           geocode = "-10,-55,600mi", n = 100)
 
 contas <- c("jairbolsonaro","jdoriajr","wilsonwitzel","RomeuZema","EduardoLeite_","costa_rui","
             CarlosMoises","CamiloSantanaCE","PauloCamara40","ratinho_jr","ronaldocaiado","helderbarbalho",
