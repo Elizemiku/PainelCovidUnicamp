@@ -2,7 +2,7 @@ library(rtweet)
 library(tidyverse)
 library(wordcloud2)
 library(httpuv)
-library(shiny)
+
 
 #Keys de acesso
 api_key <- "QVbudD80ms2yc0FyOrzSd74Jq"
@@ -74,7 +74,7 @@ teste <- c("jairbolsonaro","jdoriajr","wilsonwitzel","RomeuZema")
 # Palavras de interesse
 
 #Pegar a timeline
-get_timeline(teste, n=1000)
+b <- get_timeline(teste, n=1000)
 
 #Pegar a coluna com conteúdo de texto
 texto <- b$text
@@ -89,8 +89,9 @@ texto2 <- paste(unlist(texto), collapse = " ")
 df <- tibble(word = dicionario, freq = str_count(texto2, dicionario))
 
 #(Pesquisar outros argumentos)
-nuvem <- wordcloud2(df, size=1.6, color='random-light', backgroundColor="black")
+nuvem <- wordcloud2(df, size=4.9, minSize = 3.9, color='random-light', backgroundColor="black")
 nuvem
+
 
 
 
