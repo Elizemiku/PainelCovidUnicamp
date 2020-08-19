@@ -24,7 +24,7 @@ resource_files:
 <style>
 
 .colored {
-background-color: #ffc34d;
+background-color: #d9d9d9;
 color: #002633
 } 
 
@@ -107,7 +107,7 @@ covid <- covid %>%
 Covid-19 {data-navmenu="Análise de dados" data-icon="fa-allergies"}
 =====================================  
 
-Inputs {.sidebar}
+Inputs {.sidebar data-width=250}
 -----------------------------------------------------------------------
 
 ```{r sidebar_painel}}
@@ -275,30 +275,49 @@ Nuvem de palavras dinâmica {data-icon="fa-hashtag"}
 Inputs {.sidebar}
 -----------------------------------------------------------------------
 
-```{r , code = readLines("tweet.R"), echo = FALSE, eval = FALSE}
-# colocar em choices o dicionario que esta em tweet.R
-# renderUI(
-#   selectizeInput(
-#   inputId = "conta", 
-#   label = "Escolha a pessoa do twitter", 
-#   choices = contas, 
-#   selected = "jairbolsonaro",
-#   multiple = TRUE,
-#   options = list(create=TRUE, maxItems=4, minItems = 1,
-#                  placeholder='Selecione uma conta',
-#                  allowEmptyOption = FALSE, selectOnTab = TRUE))
-# )
-# get_timeline(input$conta, n=1000)
-# chamar nuvem
+### Contas de algumas autoridades do País
+
+```{r}
+source("tweet.R")
+
+pickerInput(
+  inputId = "conta",
+  label = "Escolha até 4 contas para descobrir quais palavras foram digitadas durante a pandemia:",
+  choices = contas,
+  multiple = TRUE,
+  selected = "jonasdonizette_",
+  options = list(`max-options` = 4, title='Selecione uma conta'))
+
+
 ```
 
 Outputs
------------------------------------------------------------------------
+----------------------------------------------------------------------
 
-```{r nuvem}
-# chamar o codigo do twitter aqui 
-# grafico 
-# nuvem_de_palavras
+### Nuvem de palavras 
+
+```{r}
+source("tweet.R")
+
+filtro_contas <- reactive({
+  if(is.null(input$conta)){
+    return()
+  }
+  else{
+  tibble(dicionario, freq = 
+           str_count(paste(unlist(str_to_lower(as.character(
+             get_timeline(input$conta, n=1000)[,"text"]))),
+             collapse = " "), dicionario))
+  }
+})
+
+output$nuvem <- renderWordcloud2({
+
+wordcloud2(filtro_contas(), size=4.9, minSize = 3.9, color='random-light', backgroundColor="black")
+
+})
+
+wordcloud2Output("nuvem")
 ```
 
 
