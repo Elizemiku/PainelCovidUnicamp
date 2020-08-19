@@ -4,7 +4,6 @@ library("wordcloud2")
 library("httpuv")
 
 #Keys de acesso
-an <- "PainelCovidUnicamp"
 api_key <- "QVbudD80ms2yc0FyOrzSd74Jq"
 api_secret_key <- "G8XGjoY91NoZ42fcweONb9iKmXLe0WkLf8U4ReeK4smDaFnk8x"
 access_token <- "143947934-hy5cYTCLZ14rW0UngS23sZeDNMI4TFS28xCDhsqA"
@@ -12,12 +11,11 @@ access_token_secret <- "oU1tHKERX7NfrxzVz7jTuoT4YPf1KuLjzcnhp6S4bxvNX"
 
 ##authenticate via web browser
 token <- create_token(
-  an,
+  app = "PainelCovidUnicamp",
   consumer_key = api_key,
   consumer_secret = api_secret_key,
   access_token = access_token,
   access_secret = access_token_secret)
-
 
 
 #Ex: Procurar filtrando Latitude,Longitude,Raio
@@ -29,9 +27,9 @@ dicionario <- c("corona", "covid", "quarentena", "lockdown", "cloroquina", "caso
                 "pandemia","contágio","confinamento","assintomático","OMS","saúde pública",
                 "pico","UTI","comorbidade","obesidade","diabete","doenças respiratórias",
                 "doenças do coração","cardíacos","diabéticos","pneumonia","vacina",
-                "casa","idosos",'"crianças","medidas","economia","Manaus","São Paulo",
+                "casa","idosos","crianças","medidas","economia","Manaus","São Paulo",
                 "Rio de Janeiro","febre","dor de cabeça","saudade","luto","mortes","óbitos",
-                "aglomeração',"casos graves","suspeita","casos confirmados","testes",
+                "aglomeração","casos graves","suspeita","casos confirmados","testes",
                 "subnotificação","solidariedade","doações","cestas básicas","risco","epicentro",
                 "comércio","home office","hospitais de campanha","auxílio emergencial","fique em casa",
                 "desemprego","empresários","Brasil","China","Itália","Estados Unidos","Espanha",
