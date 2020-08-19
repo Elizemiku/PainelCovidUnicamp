@@ -47,5 +47,10 @@ dicionario <- c("corona", "covid", "quarentena", "lockdown", "cloroquina", "caso
                 "Suécia","depressão","escolas","shoppings","afastamento")
 
 
-
-
+contas <- c("jairbolsonaro","jdoriajr","wilsonwitzel","RomeuZema","EduardoLeite_","costa_rui","	
+            CarlosMoises","CamiloSantanaCE","PauloCamara40","ratinho_jr","ronaldocaiado","helderbarbalho",	
+            "FlavioDino","wdiaspi","joaoazevedolins","MauroMendes40","belivaldochagas","Casagrande_ES",	
+            "RenanFilho_","GovernoAlagoas","gladsoncameli","maurocarlesse","GovernoRO","celmarcosrocha",	
+            "Reinaldo45psdb","waldezoficial","antoniodenarium","AbrahamWeint","DamaresAlves",	
+            "PauloGuedesMin","TerezaCrisMS","SF_Moro","tarcisiogdf","OsmarTerra","indaiatubapref",	
+            "prefpauliniasp","prefsp","sumaresp","pref_sorocaba","jonasdonizette_")	
