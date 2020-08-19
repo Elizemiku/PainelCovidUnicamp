@@ -1,6 +1,5 @@
 ---
 title: "Painel Covid Unicamp - AM091"
-date: 
 runtime: shiny
 output:
   flexdashboard::flex_dashboard:
