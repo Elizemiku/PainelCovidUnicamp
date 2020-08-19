@@ -1,19 +1,21 @@
 ---
 title: "Painel Covid Unicamp - AM091"
 runtime: shiny
-output: 
+output:
   flexdashboard::flex_dashboard:
     orientation: columns
     vertical_layout: fill
     source_code: embed
     highlight: pygments
     social: menu
-    navbar: 
+    navbar:
     - title: Github
       icon: fa-github
       href: https://github.com/Elizemiku/PainelCovidUnicamp
     includes:
       after_body: footer.html
+resource_files:
+- tweet.R
 ---
 
 <!-- cores e estilos em html pra dashboard -->
@@ -68,10 +70,10 @@ library("tidyverse")
 library("plotly")
 library("flexdashboard")
 library("shiny")
+library("shinyWidgets")
 library("geobr")
 library("gganimate")
 library("rsconnect")
-
 # opcoes das tabelas DT, caso usemos e do codigo
 # options(knitr.duplicate.label = 'allow', 
 #         dplyr.summarise.inform = FALSE,
@@ -85,31 +87,22 @@ library("rsconnect")
 #           language = list(search = 'Busca:'),
 #           lengthMenu = c(5, 10, 15, 20)
 # ))
-
 knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
 ```
 
 <!-- podemos criar um chunk pegando os codigos do twitter do R script  -->
 
-```{r , echo = FALSE, eval = FALSE}
-#code = readLines("rtweet_ex.R")
-# coloquei eval pra nao rodar por enquanto
-```
 
 ```{r, results='hide'}
 #Dados da Covid-19 no Estado de SP
 link <- "https://raw.githubusercontent.com/seade-R/dados-covid-sp/master/data/dados_covid_sp.csv"
 covid <- read_csv2(link)
-
 # deixando o nome das colunas bonitinhos
 covid <- covid %>% 
   rename("Semana_epidemiológica" = semana_epidem, 
          "Cidade" = nome_munic, "mês" = mes, "óbitos" = obitos, 
-         "óbitos_novos" = obitos_novos)
-
+         "óbitos_novos" = obitos_novos, "Data" = datahora)
 #Dados da Dengue
-
-
 #Dados da SRAG
 ```
 
@@ -120,39 +113,43 @@ Inputs {.sidebar}
 -----------------------------------------------------------------------
 
 ```{r}
-
 # seleção das Cidades
-selectInput(
+selectizeInput(
   inputId = "Cidade", 
-  label = "Cidades", 
-  choices = c(covid$Cidade),
+  label = "Escolha até 6 opções para comparar", 
+  choices = c(unique(covid$Cidade)),
   selected = "Campinas",
-  multiple = TRUE)
-
+  multiple = TRUE,
+  options = list(create=TRUE, maxItems=6, minItems = 1,
+                 placeholder='Selecione uma Cidade',
+                 allowEmptyOption = FALSE, selectOnTab = TRUE))
 # seleção do tipo de gráfico
- selectInput(
+pickerInput(
    inputId = "Graficos", 
    label = "Gráficos", 
    choices = c("Barras","Linhas"), 
    selected = "Linhas",
-   multiple = FALSE)
-
+   multiple = FALSE,
+   options = list(create=TRUE, 
+                  placeholder='Selecione o tipo de Gráfico'))
 # seleção do eixo x
- selectInput(
+pickerInput(
    inputId = "Opcao", 
-   label = "Opções", 
-   choices = c("Semana_epidemiológica","datahora","mês"), 
+   label = "Opções para o eixo x do Gráfico", 
+   choices = c("Semana_epidemiológica","Data","mês"), 
    selected = "Semana_epidemiológica",
-   multiple = FALSE)
+   multiple = FALSE
+  )
    
 # seleção do eixo y 
-selectInput(
+pickerInput(
   inputId = "ObitosCasos", 
-  label = "Informação", 
+  label = "Opções para o eixo y do Gráfico", 
   choices = c("óbitos","casos", "casos_novos", "óbitos_novos"), 
   selected = "casos",
-  multiple = FALSE)
-
+  multiple = FALSE,
+  options = list(create=TRUE, 
+                  placeholder='Selecione o tipo de ocorrência'))
 ```
 
 Outputs
@@ -162,54 +159,46 @@ Outputs
 
 ```{r}
 # filtro reativo das cidades 
-
 filtro_cidades <- reactive({
-  
-  # ver o que fazer com a variavel dias
-  # if(input$Opcao == "dia"){
-  #   covid %>%  filter(Cidade %in% input$Cidade) %>%
-  #     group_by(dia, mes) 
-  # } 
-  # else{
-  
     covid %>%  filter(Cidade %in% input$Cidade) 
-    
 })
-
 # graficos 
 output$plotly <- renderPlotly({
-
-  if(input$Graficos == "Linhas"){
-    # grafico de linhas interativo
-    # numero de opcoes do eixo y por opcoes do eixo x
-    ggplotly(
-      ggplot(filtro_cidades(), 
-             aes_string(x = input$Opcao, y = input$ObitosCasos)) +
-      geom_line(aes(color =  Cidade)) +
-      labs(title = "Covid-19 por Cidade",
-           x = paste("Por", input$Opcao, sep = " "),
-           y = paste("Número de", input$ObitosCasos, sep = " ")) +
-      theme_bw()
-      ) 
-  }
   
-  else if(input$Graficos == "Barras"){
-    # grafico de barras interativo
-    # numero de opcoes do eixo y por opcoes do eixo x
-    ggplotly(
-      ggplot(filtro_cidades(), 
-             aes_string(x = input$Opcao, y = input$ObitosCasos)) +
-      geom_bar(stat="identity", position = "dodge", aes(fill = Cidade)) +
-      labs(title = "Covid-19 por Cidade", 
-           x = paste("Por", input$Opcao, sep = " "),
-           y = paste("Número de", input$ObitosCasos, sep = " ")) + 
-      theme_bw()
-      ) 
+  if(is.null(input$Cidade)){
+    return()
+  }
+  else{
+      if(input$Graficos == "Linhas"){
+      # grafico de linhas interativo
+      # numero de opcoes do eixo y por opcoes do eixo x
+      ggplotly(
+        ggplot(filtro_cidades(), 
+               aes_string(x = input$Opcao, y = input$ObitosCasos)) +
+        geom_line(aes(color =  Cidade)) +
+        labs(title = "Covid-19 por Cidade",
+             x = paste("Por", input$Opcao, sep = " "),
+             y = paste("Número de", input$ObitosCasos, sep = " ")) +
+        theme_bw()
+        ) 
     }
+  
+    else if(input$Graficos == "Barras"){
+      # grafico de barras interativo
+      # numero de opcoes do eixo y por opcoes do eixo x
+      ggplotly(
+        ggplot(filtro_cidades(), 
+               aes_string(x = input$Opcao, y = input$ObitosCasos)) +
+        geom_bar(stat="identity", position = "dodge", aes(fill = Cidade)) +
+        labs(title = "Covid-19 por Cidade", 
+             x = paste("Por", input$Opcao, sep = " "),
+             y = paste("Número de", input$ObitosCasos, sep = " ")) + 
+        theme_bw()
+        ) 
+      }
+  }
 })
-
 plotlyOutput('plotly')
-
 ```
 
 Covid e outras doenças {data-navmenu="Análise de dados" data-icon="fa-search"}
@@ -219,7 +208,6 @@ Covid-19 {data-navmenu="Dados utilizados"  data-icon="fa-notes-medical"}
 ===================================== 
 
 ```{r}
-
 # tabela dados de covid de campinas 
 # datatable(
 #   covid %>% filter(Cidade == "Campinas"),
@@ -239,26 +227,29 @@ Covid-19 {data-navmenu="Dados utilizados"  data-icon="fa-notes-medical"}
 Dengue {data-navmenu="Dados utilizados" data-icon="fa-notes-medical"}
 ===================================== 
 ```{r}
-
 ```
 
 SRAG {data-navmenu="Dados utilizados" data-icon="fa-notes-medical"}
 ===================================== 
 ```{r}
-
 ```
 
-Total de notificações {data-navmenu="Gráficos animados" data-icon="fa-map-marker" data-width=800 data-height=400}
+Total de notificações {data-icon="fa-map-marker"}
 =====================================  
 
+Row 
+-------------------------------------
+
+### Mapa do estado de SP    
 <img src="https://raw.githubusercontent.com/Elizemiku/PainelCovidUnicamp/master/dados/evolucao.gif" alt="mapa"/>
 
-Incidência da Covid-19 {data-navmenu="Gráficos animados" data-icon="fa-hashtag"}
-=====================================  
+Row {.tabset .tabset-fade}
+-------------------------------------
+   
+### Incidência
 <img src="https://raw.githubusercontent.com/Elizemiku/PainelCovidUnicamp/master/dados/casos.gif" alt="incidencia"/>
 
-Mortes diárias por Covid-19 {data-navmenu="Gráficos animados" data-icon="fa-hashtag"}
-=====================================  
+### Óbitos
 <img src="https://raw.githubusercontent.com/Elizemiku/PainelCovidUnicamp/master/dados/mortes.gif" alt="obitos"/>
 
 Nuvem de palavras dinâmica {data-icon="fa-info-circle"}
@@ -267,12 +258,21 @@ Nuvem de palavras dinâmica {data-icon="fa-info-circle"}
 Inputs {.sidebar}
 -----------------------------------------------------------------------
 
-```{r}
-# colocar em choices o dicionario que esta em rtweet_ex.R
-selectInput("twitter", label = "Escolha a pessoa do twitter", 
-    choices = c("Bolsonaro","Dilma"), 
-    selected = "Bolsonaro",
-    multiple = FALSE)
+```{r , code = readLines("tweet.R"), echo = FALSE, eval = FALSE}
+# colocar em choices o dicionario que esta em tweet.R
+# renderUI(
+#   selectizeInput(
+#   inputId = "conta", 
+#   label = "Escolha a pessoa do twitter", 
+#   choices = contas, 
+#   selected = "jairbolsonaro",
+#   multiple = TRUE,
+#   options = list(create=TRUE, maxItems=4, minItems = 1,
+#                  placeholder='Selecione uma conta',
+#                  allowEmptyOption = FALSE, selectOnTab = TRUE))
+# )
+# get_timeline(input$conta, n=1000)
+# chamar nuvem
 ```
 
 Outputs
@@ -294,5 +294,3 @@ Row
 ### Informações sobre este projeto { .first-box }
 
 Painel Covid Unicamp - AM091 é um site feito para o projeto da disciplina de AM091 da Universidade Estadual de Campinas. O objetivo desse projeto constituiu-se em aproximar os alunos Elizabeth, Isabella e Vinicius do curso de Estatística na aplicação da parte prática do conhecimento estatístico, com enfoque nos dados da Covid-19 do Brasil. Além de contribuir para a aprendizagem dos alunos também é uma contribuição para o país demonstrando que todos estão se dedicando nesse tempo de Pandemia.
-
-
