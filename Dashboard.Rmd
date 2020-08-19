@@ -1,5 +1,6 @@
 ---
 title: "Painel Covid Unicamp - AM091"
+date: 
 runtime: shiny
 output:
   flexdashboard::flex_dashboard:
@@ -32,33 +33,35 @@ background-color: #ffccff;
   color: black;
 }
 
-body {background-color: white;}
+body {background-color:#d9d9d9;}
+
 .navbar {
-  class="navbar navbar-dark bg-primary";
+  background-color: #80002a;
 }
 
 .navbar-inverse .navbar-nav > li > a:hover,
 .navbar-inverse .navbar-nav > li > a:focus {
     color: black;
-    background-color: #66a3ff;
+    background-color: #ffc34d;
 }
 
 .navbar-inverse .navbar-nav > .active > a,
 .navbar-inverse .navbar-nav > .active > a:hover,
 .navbar-inverse .navbar-nav > .active > a:focus {
   color: black;
-  background-color:#66a3ff;
+  background-color:#ffc34d;
 }
 
 .navbar-inverse .navbar-toggle:hover,
 .navbar-inverse .navbar-toggle:focus {
-  background-color: #66a3ff;
+  background-color: #ffc34d;
 }
 
 .navbar-inverse .navbar-collapse,
 .navbar-inverse .navbar-form {
-  border-color: #66a3ff;
+  border-color: #ffc34d;
 }
+
 </style>
 
 
@@ -101,7 +104,7 @@ covid <- read_csv2(link)
 covid <- covid %>% 
   rename("Semana_epidemiológica" = semana_epidem, 
          "Cidade" = nome_munic, "mês" = mes, "óbitos" = obitos, 
-         "óbitos_novos" = obitos_novos, "Data" = datahora)
+         "óbitos_novos" = obitos_novos, "Dia" = datahora)
 #Dados da Dengue
 #Dados da SRAG
 ```
@@ -112,62 +115,78 @@ Covid-19 {data-navmenu="Análise de dados" data-icon="fa-allergies"}
 Inputs {.sidebar}
 -----------------------------------------------------------------------
 
+\newline
+
+**Seja Bem-Vindo!**
+
+\newline
+\newline
+
 ```{r}
+
 # seleção das Cidades
-selectizeInput(
+pickerInput(
   inputId = "Cidade", 
-  label = "Escolha até 6 opções para comparar", 
+  label = "Cidades do Estado de São Paulo :", 
   choices = c(unique(covid$Cidade)),
   selected = "Campinas",
   multiple = TRUE,
-  options = list(create=TRUE, maxItems=6, minItems = 1,
-                 placeholder='Selecione uma Cidade',
-                 allowEmptyOption = FALSE, selectOnTab = TRUE))
+  options = list(title ='Selecione uma Cidade',`max-options` = 5)
+  )
+
 # seleção do tipo de gráfico
 pickerInput(
    inputId = "Graficos", 
-   label = "Gráficos", 
+   label = "Opções de gráficos :", 
    choices = c("Barras","Linhas"), 
    selected = "Linhas",
    multiple = FALSE,
-   options = list(create=TRUE, 
-                  placeholder='Selecione o tipo de Gráfico'))
+   options = list(title='Selecione o tipo de Gráfico')
+   )
+
 # seleção do eixo x
 pickerInput(
    inputId = "Opcao", 
-   label = "Opções para o eixo x do Gráfico", 
-   choices = c("Semana_epidemiológica","Data","mês"), 
+   label = "Opções para o eixo x do gráfico :", 
+   choices = c("Semana_epidemiológica","Dia","mês"), 
    selected = "Semana_epidemiológica",
-   multiple = FALSE
+   multiple = FALSE,
+   options = list(title='Selecione o tipo da Data')
   )
    
 # seleção do eixo y 
 pickerInput(
   inputId = "ObitosCasos", 
-  label = "Opções para o eixo y do Gráfico", 
+  label = "Opções para o eixo y do gráfico :", 
   choices = c("óbitos","casos", "casos_novos", "óbitos_novos"), 
   selected = "casos",
   multiple = FALSE,
-  options = list(create=TRUE, 
-                  placeholder='Selecione o tipo de ocorrência'))
+  options = list(title='Selecione o tipo de ocorrência')
+  )
 ```
 
 Outputs
 -----------------------------------------------------------------------
 
-### Grafico de Casos de Covid
+### Gráficos da Covid-19
 
 ```{r}
 # filtro reativo das cidades 
 filtro_cidades <- reactive({
     covid %>%  filter(Cidade %in% input$Cidade) 
 })
+
 # graficos 
+
 output$plotly <- renderPlotly({
   
+  # para evitar de aparecer mensagem de erro ao não selecionar
+  # nenhuma cidade
   if(is.null(input$Cidade)){
     return()
   }
+  
+  # gera o rafico
   else{
       if(input$Graficos == "Linhas"){
       # grafico de linhas interativo
@@ -179,8 +198,15 @@ output$plotly <- renderPlotly({
         labs(title = "Covid-19 por Cidade",
              x = paste("Por", input$Opcao, sep = " "),
              y = paste("Número de", input$ObitosCasos, sep = " ")) +
-        theme_bw()
-        ) 
+         theme(axis.line = element_line(colour = "black"),
+               panel.background = element_rect(fill = "white", size = 2),
+               panel.grid.major = element_line(colour = "gray",
+                                               size = 1,
+                                               linetype = "solid"),
+               panel.grid.minor = element_line(colour = "gray",
+                                               size = 1,
+                                               linetype = "solid"))) %>%
+      layout(legend = list(orientation = 'h', x = 0.2, y = 1.1))
     }
   
     else if(input$Graficos == "Barras"){
@@ -193,11 +219,19 @@ output$plotly <- renderPlotly({
         labs(title = "Covid-19 por Cidade", 
              x = paste("Por", input$Opcao, sep = " "),
              y = paste("Número de", input$ObitosCasos, sep = " ")) + 
-        theme_bw()
-        ) 
+        theme(axis.line = element_line(colour = "black"),
+              panel.background = element_rect(fill = "white", size = 2),
+              panel.grid.major = element_line(colour = "gray",
+                                              size = 1,
+                                              linetype = "solid"),
+              panel.grid.minor = element_line(colour = "gray",
+                                              size = 1,
+                                              linetype = "solid"))) %>%
+      layout(legend = list(orientation = 'h', x = 0.2, y = 1.1))
       }
   }
 })
+
 plotlyOutput('plotly')
 ```
 
@@ -253,7 +287,7 @@ Row {.tabset .tabset-fade}
     
 <img src="https://raw.githubusercontent.com/Elizemiku/PainelCovidUnicamp/master/dados/mortes.gif" alt="obitos"/>
 
-Nuvem de palavras dinâmica {data-icon="fa-info-circle"}
+Nuvem de palavras dinâmica {data-icon="fa-hashtag"}
 =====================================  
 
 Inputs {.sidebar}
