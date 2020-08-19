@@ -25,13 +25,9 @@ resource_files:
 <style>
 
 .colored {
-background-color: #ffccff;
+background-color: #ffc34d;
+color: #002633
 } 
-
-.first-box {
-  background-color: #ffccff;
-  color: black;
-}
 
 body {background-color:#d9d9d9;}
 
@@ -115,14 +111,8 @@ Covid-19 {data-navmenu="Análise de dados" data-icon="fa-allergies"}
 Inputs {.sidebar}
 -----------------------------------------------------------------------
 
-\newline
-
-**Seja Bem-Vindo!**
-
-\newline
-\newline
-
-```{r}
+```{r sidebar_painel}}
+p(strong(h3("Seja Bem-Vindo!")))
 
 # seleção das Cidades
 pickerInput(
@@ -170,7 +160,7 @@ Outputs
 
 ### Gráficos da Covid-19
 
-```{r}
+```{r graficos_covid}
 # filtro reativo das cidades 
 filtro_cidades <- reactive({
     covid %>%  filter(Cidade %in% input$Cidade) 
@@ -186,7 +176,7 @@ output$plotly <- renderPlotly({
     return()
   }
   
-  # gera o rafico
+  # gera o grafico
   else{
       if(input$Graficos == "Linhas"){
       # grafico de linhas interativo
@@ -235,6 +225,8 @@ output$plotly <- renderPlotly({
 plotlyOutput('plotly')
 ```
 
+> Gráfico de dados da Covid-19 até a presente data.
+
 Covid e outras doenças {data-navmenu="Análise de dados" data-icon="fa-search"}
 =====================================  
 
@@ -257,8 +249,10 @@ Sobre a SRAG temos este trecho do boletim epidemiológico feito pelo Núcleo de 
 
 No início da pandemia, não era raro ouvirmos certos comentários infundados comparando a Covid-19 com outras doenças conhecidas, como por exemplo a gripe - o termo "gripezinha" foi uma ilação do presidente, inclusive - No intuito de naturalizar a gravidade do problema que estamos enfrentando. 
 
+
 Gráficos animados {data-icon="fa-chart-line"}
 =====================================  
+
 Row 
 -------------------------------------
     
@@ -302,7 +296,7 @@ Inputs {.sidebar}
 Outputs
 -----------------------------------------------------------------------
 
-```{r}
+```{r nuvem}
 # chamar o codigo do twitter aqui 
 # grafico 
 # nuvem_de_palavras
@@ -312,12 +306,28 @@ Outputs
 Sobre {data-icon="fa-info-circle"}
 =====================================  
 
-Row
---------------------------------------------------------------
+### Informações sobre o projeto: {.colored}
 
-### Informações sobre este projeto { .first-box }
+> Painel Covid Unicamp - AM091 é um site feito para o projeto da disciplina AM091 da Universidade Estadual de Campinas. O objetivo desse projeto constituiu-se em aproximar os alunos Elizabeth, Isabella e Vinícius do curso de Estatística, na aplicação da parte prática do conhecimento estatístico, com enfoque nos dados da Covid-19 no Estado de São Paulo. Este projeto, além de contribuir para a aprendizagem dos alunos também é uma contribuição para o país, demonstrando que todos estão se dedicando nesse tempo de Pandemia. <br/><br/>
+> Disciplina AM091 - Proposta 5: Coleta de informações/dados, Verificação de veracidade de dados/informações. Análise de dados usando ferramentas matemáticas/estatísticas, Divulgação das informações para o publico geral. <br/><br/>
+>Instituto de Matemática, Estatística e Computação Científica/ IMEEC <br/>
+>Universidade de Campinas / UNICAMP
 
-Painel Covid Unicamp - AM091 é um site feito para o projeto da disciplina de AM091 da Universidade Estadual de Campinas. O objetivo desse projeto constituiu-se em aproximar os alunos Elizabeth, Isabella e Vinicius do curso de Estatística na aplicação da parte prática do conhecimento estatístico, com enfoque nos dados da Covid-19 do Brasil. Além de contribuir para a aprendizagem dos alunos também é uma contribuição para o país demonstrando que todos estão se dedicando nesse tempo de Pandemia.
+Link para os dados utilizados no Painel:
+
+Covid:
+
+- https://www.saopaulo.sp.gov.br/planosp/simi/dados-abertos/
+
+Dengue:
+
+- http://www.saude.sp.gov.br/cve-centro-de-vigilancia-epidemiologica-prof.-alexandre-vranjac/areas-de-vigilancia/doencas-de-transmissao-por-vetores-e-zoonoses/arboviroses-urbanas/dengue/dados-estatisticos
+
+SRAG:
+
+- https://opendatasus.saude.gov.br/dataset/bd-srag-2019 
+- https://opendatasus.saude.gov.br/dataset/bd-srag-2020
+
 
 
 Covid-19 {data-navmenu="Dados utilizados"  data-icon="fa-table"}
