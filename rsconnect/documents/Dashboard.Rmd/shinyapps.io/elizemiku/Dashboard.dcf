@@ -5,8 +5,9 @@ account: elizemiku
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 2671453
-bundleId: 3522990
+bundleId: 3529985
 url: https://elizemiku.shinyapps.io/Dashboard/
-when: 1597615936.30674
+when: 1597761775.76601
 asMultiple: FALSE
 asStatic: FALSE
+additionalFiles: tweet.R
