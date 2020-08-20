@@ -24,11 +24,11 @@ resource_files:
 <style>
 
 .colored {
-background-color: #d9d9d9;
+background-color:#eeb4b4;
 color: #002633
 } 
 
-body {background-color:#d9d9d9;}
+body {background-color:#eeb4b4;}
 
 .navbar {
   background-color: #80002a;
@@ -234,16 +234,22 @@ plotlyOutput('plotly')
 Covid e outras doenças {data-navmenu="Análise de dados" data-icon="fa-search"}
 =====================================  
 
-Row
+Row{.tabset}
 --------------------------------------------------------------
 
-Queremos ilustrar o impacto da Covid-19 nas estatísticas de Síndrome Respiratória Aguda Grave (SRAG). Para isso, temos os dados da SRAG no estado de SP no ano de 2019 e os dados da SRAG no estado até o começo de Agosto deste ano. 
+### SRAG - Casos
 
-Sobre a SRAG temos este trecho do boletim epidemiológico feito pelo Núcleo de Vigilância Epidemiológica Hospitalar com a Santa Casa de Misericórdia de Goiânia:
 
-"Dentre os principais agentes etiológicos que resultam em SRAG, estão os vírus (influenza A, dengue, vírus sincicial respiratório, adenovírus, hantavírus e coronavírus), e outros agentes (pneumococos,outrasbactérias, Legionella sp., leptospirose, etc.) ... Considera-se caso suspeito de SRAG todos os indivíduos de qualquer idade com doença respiratória aguda caracterizada por febre superior a 38ºC, tosse e dispneia, acompanhadas ou não de dor de garganta ou manifestações gastrointestinais. Além disso, devem ser observados os seguintes sinais e sintomas: aumento d afrequência respiratória (>25 rpm) e hipotensão em relação à pressão arterial habitual do paciente. Em crianças, acrescentam-se os seguintes sintomas: batimentos de asa de nariz, cianose, tiragem intercostal,desidratação e inapetência"
+
+\newline
 
 ```{r}
+p('Queremos ilustrar o impacto da Covid-19 nas estatísticas de Síndrome Respiratória Aguda Grave (SRAG). Para isso, temos os dados da SRAG no estado de SP no ano de 2019 e os dados da SRAG no estado até o começo de Agosto deste ano.') 
+
+p('Sobre a SRAG temos este trecho do boletim epidemiológico feito pelo Núcleo de Vigilância Epidemiológica Hospitalar com a Santa Casa de Misericórdia de Goiânia: "Dentre os principais agentes etiológicos que resultam em SRAG, estão os vírus (influenza A, dengue, vírus sincicial respiratório, adenovírus, hantavírus e coronavírus), e outros agentes (pneumococos,outrasbactérias, Legionella sp., leptospirose, etc.')
+
+p('... Considera-se caso suspeito de SRAG todos os indivíduos de qualquer idade com doença respiratória aguda caracterizada por febre superior a 38ºC, tosse e dispneia, acompanhadas ou não de dor de garganta ou manifestações gastrointestinais. Além disso, devem ser observados os seguintes sinais e sintomas: aumento d afrequência respiratória (>25 rpm) e hipotensão em relação à pressão arterial habitual do paciente. Em crianças, acrescentam-se os seguintes sintomas: batimentos de asa de nariz, cianose, tiragem intercostal,desidratação e inapetência"')
+
 srag19 <- read_csv("dados/srag2019.csv")
 srag20 <- read.csv("dados/srag2020.csv")
 
@@ -267,9 +273,12 @@ ggplot(srag19_20) +
   theme_bw()
 ```
 
-Existe uma diferença colossal no número de complicações respiratórias no estado de São Paulo - e em todo Brasil, para ser mais correto - e nem chegamos ao final de 2020, definitivamente o termo "gripezinha" (ilação do presidente, inclusive) não reflete a gravidade do problema que estamos enfrentando. 
+### SRAG - Causas
+
 
 ```{r}
+p('Existe uma diferença colossal no número de complicações respiratórias no estado de São Paulo - e em todo Brasil, para ser mais correto - e nem chegamos ao final de 2020, definitivamente o termo "gripezinha" (ilação do presidente, inclusive) não reflete a gravidade do problema que estamos enfrentando. ')
+
 srag20 <- srag20 %>% mutate(DUMMY = 1) %>% group_by(DT_NOTIFIC, CLASSI_FIN, EVOLUCAO, SEM_NOT) %>% 
   summarise(Casos = sum(DUMMY)) %>% 
   rename("Causa" = CLASSI_FIN, "Data" = DT_NOTIFIC, "Evolucao" = EVOLUCAO, "Semana" = SEM_NOT)
@@ -284,9 +293,11 @@ ggplot(srag20, aes(x = Semana, y = Casos, fill = as.factor(Causa))) +
        subtitle = "Casos semanais agrupados pela causa", 
        caption = "Fonte: DataSUS") +
   scale_fill_discrete(name = "Causa", labels = c("Influenza", "Outro Vírus Respiratório", "Outro Agente Etiológico", "SRAG não especificado", "COVID-19", "Info. faltante")) 
+
+p('Podemos ver claramente a influência da Covid-19 na contabilização dos casos, sem contar que temos nesta classificação ainda SRAG não especificado (o Brasil tem uma taxa baíxissima de testes, média de 2,28 para cada 100 mil habitantes [1]) e temos dados faltantes no preenchimento da ficha.')
 ```
 
-Podemos ver claramente a influência da Covid-19 na contabilização dos casos, sem contar que temos nesta classificação ainda SRAG não especificado (o Brasil tem uma taxa baíxissima de testes, média de 2,28 para cada 100 mil habitantes [1]) e temos dados faltantes no preenchimento da ficha.
+
 
 Gráficos animados {data-icon="fa-chart-line"}
 =====================================  
@@ -411,11 +422,11 @@ wordcloud2Output("nuvem")
 ```{r}
 output$tabela<- renderDataTable({
 
-filtro_contas() %>% arrange(freq)
+filtro_contas() %>% arrange(desc(freq))
   
 })
 
-DTOutput("tabela")
+DTOutput("tabela", height = "auto")
 ```
 
 
@@ -443,36 +454,3 @@ SRAG:
 
 - https://opendatasus.saude.gov.br/dataset/bd-srag-2019 
 - https://opendatasus.saude.gov.br/dataset/bd-srag-2020
-
-
-
-Covid-19 {data-navmenu="Dados utilizados"  data-icon="fa-table"}
-===================================== 
-
-```{r}
-# tabela dados de covid de campinas 
-# datatable(
-#   covid %>% filter(Cidade == "Campinas"),
-#   colnames = c('ID' = 1),
-#   caption =  htmltools::tags$caption(
-#     style = 'caption-side: top; text-align: left; color:blue; font-size: 16px',
-#     'Tabela 1: ',
-#     htmltools::em('Dados da Covid-19 utilizados para as análises',)
-#   ),
-#   class = c('cell-border stripe'),
-#   extensions = c('Buttons'),
-#   options = list(dom = 'Bfrtip',
-#                  buttons = c('csv', 'excel', 'print'))
-# )
-```
-
-Dengue {data-navmenu="Dados utilizados" data-icon="fa-table"}
-===================================== 
-```{r}
-```
-
-SRAG {data-navmenu="Dados utilizados" data-icon="fa-table"}
-===================================== 
-```{r}
-```
-
