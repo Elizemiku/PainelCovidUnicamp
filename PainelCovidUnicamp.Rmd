@@ -237,18 +237,13 @@ Covid e outras doenças {data-navmenu="Análise de dados" data-icon="fa-search"}
 Row{.tabset}
 --------------------------------------------------------------
 
-### SRAG - Casos
+### **SRAG - Casos**
 
 
-
-\newline
-
-```{r}
+```{r, fig.pos="center", fig.width=8, fig.height=6}
 p('Queremos ilustrar o impacto da Covid-19 nas estatísticas de Síndrome Respiratória Aguda Grave (SRAG). Para isso, temos os dados da SRAG no estado de SP no ano de 2019 e os dados da SRAG no estado até o começo de Agosto deste ano.') 
 
-p('Sobre a SRAG temos este trecho do boletim epidemiológico feito pelo Núcleo de Vigilância Epidemiológica Hospitalar com a Santa Casa de Misericórdia de Goiânia: "Dentre os principais agentes etiológicos que resultam em SRAG, estão os vírus (influenza A, dengue, vírus sincicial respiratório, adenovírus, hantavírus e coronavírus), e outros agentes (pneumococos,outrasbactérias, Legionella sp., leptospirose, etc.')
-
-p('... Considera-se caso suspeito de SRAG todos os indivíduos de qualquer idade com doença respiratória aguda caracterizada por febre superior a 38ºC, tosse e dispneia, acompanhadas ou não de dor de garganta ou manifestações gastrointestinais. Além disso, devem ser observados os seguintes sinais e sintomas: aumento d afrequência respiratória (>25 rpm) e hipotensão em relação à pressão arterial habitual do paciente. Em crianças, acrescentam-se os seguintes sintomas: batimentos de asa de nariz, cianose, tiragem intercostal,desidratação e inapetência"')
+p('Sobre a SRAG temos este trecho do boletim epidemiológico feito pelo Núcleo de Vigilância Epidemiológica Hospitalar com a Santa Casa de Misericórdia de Goiânia: "Dentre os principais agentes etiológicos que resultam em SRAG, estão os vírus (influenza A, dengue, vírus sincicial respiratório, adenovírus, hantavírus e coronavírus), e outros agentes (pneumococos,outrasbactérias, Legionella sp., leptospirose, etc.)...Considera-se caso suspeito de SRAG todos os indivíduos de qualquer idade com doença respiratória aguda caracterizada por febre superior a 38ºC, tosse e dispneia, acompanhadas ou não de dor de garganta ou manifestações gastrointestinais. Além disso, devem ser observados os seguintes sinais e sintomas: aumento d afrequência respiratória (>25 rpm) e hipotensão em relação à pressão arterial habitual do paciente. Em crianças, acrescentam-se os seguintes sintomas: batimentos de asa de nariz, cianose, tiragem intercostal,desidratação e inapetência"')
 
 srag19 <- read_csv("dados/srag2019.csv")
 srag20 <- read.csv("dados/srag2020.csv")
@@ -273,11 +268,11 @@ ggplot(srag19_20) +
   theme_bw()
 ```
 
-### SRAG - Causas
+### **SRAG - Causas**
 
 
-```{r}
-p('Existe uma diferença colossal no número de complicações respiratórias no estado de São Paulo - e em todo Brasil, para ser mais correto - e nem chegamos ao final de 2020, definitivamente o termo "gripezinha" (ilação do presidente, inclusive) não reflete a gravidade do problema que estamos enfrentando. ')
+```{r, fig.pos="center", fig.width=8, fig.height=6}
+p('Existe um aumento descomunal no número de complicações por causas respiratórias no estado de São Paulo - e em todo Brasil, para ser mais exato - e nem chegamos ao final de 2020, definitivamente o termo "gripezinha" (ilação do presidente, inclusive) não reflete a gravidade do problema que estamos enfrentando.')
 
 srag20 <- srag20 %>% mutate(DUMMY = 1) %>% group_by(DT_NOTIFIC, CLASSI_FIN, EVOLUCAO, SEM_NOT) %>% 
   summarise(Casos = sum(DUMMY)) %>% 
@@ -292,17 +287,20 @@ ggplot(srag20, aes(x = Semana, y = Casos, fill = as.factor(Causa))) +
   labs(title = "Causas da SRAG em 2020",
        subtitle = "Casos semanais agrupados pela causa", 
        caption = "Fonte: DataSUS") +
-  scale_fill_discrete(name = "Causa", labels = c("Influenza", "Outro Vírus Respiratório", "Outro Agente Etiológico", "SRAG não especificado", "COVID-19", "Info. faltante"))
+  scale_fill_discrete(name = "Causas: ", labels = c("Influenza", "Outro Vírus Respiratório", "Outro Agente Etiológico", "SRAG não especificado", "COVID-19", "Info. faltante")) +
+  theme(legend.position = "bottom")
 
-p('Podemos ver claramente a influência da Covid-19 na contabilização dos casos, sem contar que temos nesta classificação ainda SRAG não especificado (o Brasil tem uma taxa baíxissima de testes, média de 2,28 para cada 100 mil habitantes [1]) e temos dados faltantes no preenchimento da ficha.')
+p('Podemos ver claramente o impacto da Covid-19 para o aumento do quadro de SRAG em 2020, sem contar que temos nesta classificação ainda SRAG não especificado, muito provavelmente Covid-19 em sua maioria (o Brasil tem uma taxa baíxissima de testes, média de 2,28 para cada 100 mil habitantes [1]) e temos uma significativa taxa de dados faltantes no preenchimento da ficha.')
 ```
 
-### Dengue
+### **Dengue**
 
 ```{r}
+p("Uma (infelizmente) velha conhecida dos brasileiros é a dengue, podemos ver que a arbovirose também é bem menos letal que a Covid-19, enquanto a dengue tem uma letalidade registrada de aproximadamente 0,05% no estado de São Paulo, a doença do Coronavírus tem uma letalidade em torno de 3%.")
+
 ev_dengue <- read_csv2("dados/evolucao_dengue.csv")
 
-covid_comp <- covid %>% filter(Dia == Sys.Date()) %>% summarise(Casos = sum(casos), Obitos = sum(óbitos))
+covid_comp <- covid %>% filter(Dia == "2020-08-19") %>% summarise(Casos = sum(casos), Obitos = sum(óbitos))
 
 covid_dengue <- tibble(Doença = c("Dengue", "Covid-19"),
                        Casos = c(ev_dengue$Total[1], covid_comp[1] %>% unlist() %>% unname()),
@@ -310,14 +308,16 @@ covid_dengue <- tibble(Doença = c("Dengue", "Covid-19"),
 
 covid_dengue <- covid_dengue %>% pivot_longer(-Doença, names_to = "Ocorrência", values_to = "Quantidade")
 
+options(scipen = 100000)
 ggplot(covid_dengue, aes(x = Doença, y = Quantidade, fill = `Ocorrência`)) +
   geom_bar(stat = "identity") +
   theme_bw() +
   scale_fill_manual(values = c("salmon", "black"))+
-  labs(title = "Dengue x Covid-19", subtitle = "Estatísticas de casos registrados e óbitos em decorrência de dengue durante todo o ano de 2019 e Covid-19 até o presente momento")
-```
+  labs(title = "Dengue x Covid-19", subtitle = "Números da dengue durante todo o ano de 2019 e de Covid-19 até o presente momento") +
+  scale_y_continuous(limits = c(0, 800000))
 
-Uma (infelizmente) velha conhecida dos brasileiros é a dengue, podemos ver que a arbovirose também é bem menos letal que a Covid-19, enquanto a dengue tem uma letalidade registrada de aproximadamente 0,05% no estado de São Paulo, a doença do Coronavírus tem uma letalidade em torno de 3%.
+p('Ref.1: https://g1.globo.com/bemestar/coronavirus/noticia/2020/06/12/numeros-mostram-que-brasil-ainda-faz-brutalmente-menos-testes-para-coronavirus-do-que-deveria-estamos-no-escuro-diz-especialista.ghtml')
+```
 
 
 Gráficos animados {data-icon="fa-chart-line"}
