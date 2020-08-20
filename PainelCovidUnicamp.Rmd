@@ -3,8 +3,7 @@ title: "Painel Covid Unicamp - AM091"
 runtime: shiny
 output:
   flexdashboard::flex_dashboard:
-    vertical_layout: scroll
-    highlight: pygments
+    vertical_layout: fill
     source_code: embed
     social: menu
     navbar:
@@ -14,7 +13,6 @@ output:
     includes:
       after_body: footer.html
 resource_files:
-- tweet.R
 - dados/srag2020.csv
 - dados/evolucao_dengue.csv
 ---
@@ -63,13 +61,7 @@ body {background-color:#eeb4b4;}
 
 <!-- codigo da dashboard -->
 
-```{r }
-# puxando o codigo do tweet.R para usar no codigo reativo em shiny na aba de nuvem de palavras
-source("tweet.R")
-```
-
 ```{r setup, include=FALSE}
-
 # bibliotecas utilizadas 
 library("tidyverse")
 library("plotly")
@@ -103,12 +95,17 @@ knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
 ```{r, dados, results='hide'}
 #Dados da Covid-19 no Estado de SP
 link <- "https://raw.githubusercontent.com/seade-R/dados-covid-sp/master/data/dados_covid_sp.csv"
+
 covid <- read_csv2(link)
+
 # deixando o nome das colunas bonitinhos
 covid <- covid %>% 
   rename("Semana_epidemiológica" = semana_epidem, 
          "Cidade" = nome_munic, "mês" = mes, "óbitos" = obitos, 
          "óbitos_novos" = obitos_novos, "Dia" = datahora)
+
+
+
 ```
 
 Covid-19 {data-navmenu="Análise de dados" data-icon="fa-allergies"}
@@ -117,7 +114,7 @@ Covid-19 {data-navmenu="Análise de dados" data-icon="fa-allergies"}
 Inputs {.sidebar data-width=250}
 -----------------------------------------------------------------------
 
-```{r sidebar_painel}
+```{r sidebar_panel_covid}
 p(strong(h3("Seja Bem-Vindo!")))
 
 # seleção das Cidades
@@ -159,6 +156,13 @@ pickerInput(
   multiple = FALSE,
   options = list(title='Selecione o tipo de ocorrência')
   )
+
+pickerInput(
+  inputId = "escala", 
+  label = "Escala",
+  choices = c("Linear", "Logarítmica"), 
+  selected="Linear", 
+  multiple = FALSE)
 ```
 
 Outputs
@@ -188,44 +192,103 @@ output$plotly <- renderPlotly({
       if(input$Graficos == "Linhas"){
       # grafico de linhas interativo
       # numero de opcoes do eixo y por opcoes do eixo x
-      ggplotly(
-        ggplot(filtro_cidades(), 
-               aes_string(x = input$Opcao, y = input$ObitosCasos)) +
-        geom_line(aes(color =  Cidade)) +
-        labs(title = "Covid-19 por Cidade",
-             x = paste("Por", input$Opcao, sep = " "),
-             y = paste("Número de", input$ObitosCasos, sep = " ")) +
-         theme(axis.line = element_line(colour = "black"),
-               panel.background = element_rect(fill = "white", size = 2),
-               panel.grid.major = element_line(colour = "gray",
-                                               size = 1,
-                                               linetype = "solid"),
-               panel.grid.minor = element_line(colour = "gray",
-                                               size = 1,
-                                               linetype = "solid"))) %>%
-      layout(legend = list(orientation = 'h', x = 0.2, y = 1.1, font=list(size=18)))
+        if(input$escala == "Linear"){
+          
+          covid_plot1 <-  ggplot(filtro_cidades(), 
+                                aes_string(x = input$Opcao, y = input$ObitosCasos)) +
+            geom_line(aes(color =  Cidade)) +
+            labs(title = "Covid-19 por Cidade",
+                 x = paste("Por", input$Opcao, sep = " "),
+                 y = paste("Número de", input$ObitosCasos, sep = " ")) +
+             theme(axis.line = element_line(colour = "black"),
+                   panel.background = element_rect(fill = "white", size = 2),
+                   panel.grid.major = element_line(colour = "gray",
+                                                   size = 1,
+                                                   linetype = "solid"),
+                   panel.grid.minor = element_line(colour = "gray",
+                                                   size = 1,
+                                                   linetype = "solid"))
+          
+          covid_plot1 <- ggplotly(covid_plot1) %>% 
+            config(displayModeBar = FALSE) %>%
+            layout(legend = 
+                       list(orientation = 'h', x = 0.2, y = 1.1, font=list(size=18))) 
+          covid_plot1
+        }
+        else{
+           covid_plot2 <- ggplot(filtro_cidades(), 
+                   aes_string(x = input$Opcao, y = input$ObitosCasos)) +
+            geom_line(aes(color =  Cidade)) +
+            scale_y_log10() +
+            labs(title = "Covid-19 por Cidade",
+                 x = paste("Por", input$Opcao, sep = " "),
+                 y = paste("Número de", input$ObitosCasos, "por escala Logarítmica",
+                           sep = " ")) +
+             theme(axis.line = element_line(colour = "black"),
+                   panel.background = element_rect(fill = "white", size = 2),
+                   panel.grid.major = element_line(colour = "gray",
+                                                   size = 1,
+                                                   linetype = "solid"),
+                   panel.grid.minor = element_line(colour = "gray",
+                                                   size = 1,
+                                                   linetype = "solid"))
+           covid_plot2 <- ggplotly(covid_plot2) %>%
+              config(displayModeBar = FALSE) %>%
+              layout(legend = 
+                       list(orientation = 'h', x = 0.2, y = 1.1, font=list(size=18))) 
+           
+           covid_plot2
+        }
+      
     }
-  
     else if(input$Graficos == "Barras"){
+      if(input$escala == "Linear"){
       # grafico de barras interativo
       # numero de opcoes do eixo y por opcoes do eixo x
-      ggplotly(
-        ggplot(filtro_cidades(), 
-               aes_string(x = input$Opcao, y = input$ObitosCasos)) +
-        geom_bar(stat="identity", position = "dodge", aes(fill = Cidade)) +
-        labs(title = "Covid-19 por Cidade", 
-             x = paste("Por", input$Opcao, sep = " "),
-             y = paste("Número de", input$ObitosCasos, sep = " ")) + 
-        theme(axis.line = element_line(colour = "black"),
-              panel.background = element_rect(fill = "white", size = 2),
-              panel.grid.major = element_line(colour = "gray",
-                                              size = 1,
-                                              linetype = "solid"),
-              panel.grid.minor = element_line(colour = "gray",
-                                              size = 1,
-                                              linetype = "solid"))) %>%
-     layout(legend = list(orientation = 'h', x = 0.2, y = 1.1, font=list(size=18)))
+        covid_plot3 <- ggplot(filtro_cidades(), 
+                 aes_string(x = input$Opcao, y = input$ObitosCasos)) +
+          geom_bar(stat="identity", position = "dodge", aes(fill = Cidade)) +
+          labs(title = "Covid-19 por Cidade", 
+               x = paste("Por", input$Opcao, sep = " "),
+               y = paste("Número de", input$ObitosCasos, sep = " ")) + 
+          theme(axis.line = element_line(colour = "black"),
+                panel.background = element_rect(fill = "white", size = 2),
+                panel.grid.major = element_line(colour = "gray",
+                                                size = 1,
+                                                linetype = "solid"),
+                panel.grid.minor = element_line(colour = "gray",
+                                                size = 1,
+                                                linetype = "solid"))
+        covid_plot3 <- ggplotly(covid_plot3) %>%
+          config(displayModeBar = FALSE) %>%
+          layout(legend = list(orientation = 'h', x = 0.2, y = 1.1, font=list(size=18))) 
+        
+        covid_plot3
       }
+      else{
+         covid_plot4 <- ggplot(filtro_cidades(), 
+                 aes_string(x = input$Opcao, y = input$ObitosCasos)) +
+          geom_bar(stat="identity", position = "dodge", aes(fill = Cidade)) +
+          scale_y_log10() +
+          labs(title = "Covid-19 por Cidade", 
+               x = paste("Por", input$Opcao, sep = " "),
+               y = paste("Número de", input$ObitosCasos, "por escala Logarítmica",
+                           sep = " ")) + 
+          theme(axis.line = element_line(colour = "black"),
+                panel.background = element_rect(fill = "white", size = 2),
+                panel.grid.major = element_line(colour = "gray",
+                                                size = 1,
+                                                linetype = "solid"),
+                panel.grid.minor = element_line(colour = "gray",
+                                                size = 1,
+                                                linetype = "solid"))
+        covid_plot4 <- ggplotly(covid_plot4) %>%
+          config(displayModeBar = FALSE) %>%
+          layout(legend = list(orientation = 'h', x = 0.2, y = 1.1, font=list(size=18))) 
+        
+        covid_plot4
+      }
+    }
   }
 })
 
@@ -237,7 +300,7 @@ plotlyOutput('plotly')
 Covid e outras doenças {data-navmenu="Análise de dados" data-icon="fa-search"}
 =====================================  
 
-Column
+Column{.tabset}
 --------------------------------------------------------------
 
 ### SRAG - Casos
@@ -364,18 +427,19 @@ Row {.tabset .tabset-fade}
 Nuvem de palavras dinâmica {data-icon="fa-twitter"}
 =====================================  
 
-Inputs {.sidebar data-width=260}
+Inputs {.sidebar data-width=250}
 -----------------------------------------------------------------------
 
-### **Contas de algumas autoridades do País:**
+```{r sidebar_panel_nuvem}
+source("tweet.R")
 
-```{r}
+p(h4(strong("Contas do twitter de algumas autoridades do Brasil:")))
+
 br()
 
 pickerInput(
   inputId = "conta",
-  label = "Escolha até 4 contas para descobrir quais palavras 
-  foram digitadas durante a pandemia:",
+  label = "Escolha até 4 opções para descobrir quais palavras que são relacionadas com a pandemia foram digitadas pelas contas abaixo:",
   choices = contas,
   multiple = TRUE,
   selected = "jairbolsonaro",
@@ -383,45 +447,45 @@ pickerInput(
 
 br()
 
-p("Palavras encontradas nos últimos 1000 tweets de cada conta")
+p("As palavras encontradas são provenientes dos últimos 1000 tweets de cada conta.")
 
 ```
 
-Row
+Column{.tabset}
 --------------------------------------------------------------
 
 ### Nuvem de palavras 
 
 ```{r}
 filtro_contas <- reactive({
+
+dicionario <- unique(dicionario)
+  
+tibble(dicionario, freq = 
+         str_count(paste(unlist(str_to_lower(as.character(
+           get_timeline(input$conta, n=1000)[,"text"]))),
+           collapse = " "), dicionario))
+})
+
+output$nuvem <- renderWordcloud2({
   if(is.null(input$conta)){
     return()
   }
   else{
-  
-  dicionario <- unique(dicionario)
-  
-  tibble(dicionario, freq = 
-           str_count(paste(unlist(str_to_lower(as.character(
-             get_timeline(input$conta, n=1000)[,"text"]))),
-             collapse = " "), dicionario))
+    wordcloud2(filtro_contas(), size=4.9, minSize = 3.9, 
+               color='random-light', backgroundColor="black")
   }
-})
-
-output$nuvem <- renderWordcloud2({
-
-wordcloud2(filtro_contas(), size=4.9, minSize = 3.9, color='random-light', backgroundColor="black")
-
 })
 
 wordcloud2Output("nuvem")
 ```
 
 ### Tabela dinâmica
+
 ```{r}
 output$tabela<- DT::renderDT({
 
-datatable(filtro_contas() %>% arrange(desc(freq)) %>% distinct(),
+datatable(filtro_contas() %>% arrange(desc(freq)),
   colnames = c('Dicionário de palavras' = 'dicionario', 
                'Frequência' = 'freq'),
   caption =  htmltools::tags$caption(
@@ -460,9 +524,3 @@ SRAG:
 - https://opendatasus.saude.gov.br/dataset/bd-srag-2019 
 - https://opendatasus.saude.gov.br/dataset/bd-srag-2020
 
-```{r, echo=FALSE}
-# exemplo de inserção de imagem
-# htmltools::img(src = knitr::image_uri(file.path(R.home("doc"), "html", "logo.jpg")), 
-#                alt = 'logo', 
-#                style = 'position:absolute; top:0; right:0; padding:10px;')
-```
