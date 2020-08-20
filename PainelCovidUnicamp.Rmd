@@ -3,10 +3,9 @@ title: "Painel Covid Unicamp - AM091"
 runtime: shiny
 output:
   flexdashboard::flex_dashboard:
-    orientation: columns
-    vertical_layout: fill
-    source_code: embed
+    vertical_layout: scroll
     highlight: pygments
+    source_code: embed
     social: menu
     navbar:
     - title: Github
@@ -16,6 +15,8 @@ output:
       after_body: footer.html
 resource_files:
 - tweet.R
+- dados/srag2020.csv
+- dados/evolucao_dengue.csv
 ---
 
 <!-- cores e estilos em html pra dashboard -->
@@ -62,11 +63,13 @@ body {background-color:#eeb4b4;}
 
 <!-- codigo da dashboard -->
 
-```{r}
+```{r }
+# puxando o codigo do tweet.R para usar no codigo reativo em shiny na aba de nuvem de palavras
 source("tweet.R")
 ```
 
 ```{r setup, include=FALSE}
+
 # bibliotecas utilizadas 
 library("tidyverse")
 library("plotly")
@@ -77,10 +80,12 @@ library("DT")
 library("geobr")
 library("gganimate")
 library("rsconnect")
+
 # opcoes das tabelas DT, caso usemos e do codigo
 options(knitr.duplicate.label = 'allow',
         dplyr.summarise.inform = FALSE,
         DT.options = list(
+          columnDefs = list(list(className = 'dt-center')),
           initComplete = JS(
             "function(settings, json)
             {","$(this.api().table().header()).css({'background-color': '#1d80e2  ',
@@ -88,15 +93,14 @@ options(knitr.duplicate.label = 'allow',
             ),
           pageLength = 5,
           language = list(search = 'Busca:'),
-          lengthMenu = c(5, 10, 15, 20)
+          lengthMenu = c(5, 10, 15, 20),
+          autoWidth = TRUE
 ))
+
 knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
 ```
 
-<!-- podemos criar um chunk pegando os codigos do twitter do R script  -->
-
-
-```{r, results='hide'}
+```{r, dados, results='hide'}
 #Dados da Covid-19 no Estado de SP
 link <- "https://raw.githubusercontent.com/seade-R/dados-covid-sp/master/data/dados_covid_sp.csv"
 covid <- read_csv2(link)
@@ -105,8 +109,6 @@ covid <- covid %>%
   rename("Semana_epidemiológica" = semana_epidem, 
          "Cidade" = nome_munic, "mês" = mes, "óbitos" = obitos, 
          "óbitos_novos" = obitos_novos, "Dia" = datahora)
-#Dados da Dengue
-#Dados da SRAG
 ```
 
 Covid-19 {data-navmenu="Análise de dados" data-icon="fa-allergies"}
@@ -165,6 +167,7 @@ Outputs
 ### Gráficos da Covid-19
 
 ```{r graficos_covid}
+
 # filtro reativo das cidades 
 filtro_cidades <- reactive({
     covid %>%  filter(Cidade %in% input$Cidade) 
@@ -200,7 +203,7 @@ output$plotly <- renderPlotly({
                panel.grid.minor = element_line(colour = "gray",
                                                size = 1,
                                                linetype = "solid"))) %>%
-      layout(legend = list(orientation = 'h', x = 0.2, y = 1.1))
+      layout(legend = list(orientation = 'h', x = 0.2, y = 1.1, font=list(size=18)))
     }
   
     else if(input$Graficos == "Barras"){
@@ -221,7 +224,7 @@ output$plotly <- renderPlotly({
               panel.grid.minor = element_line(colour = "gray",
                                               size = 1,
                                               linetype = "solid"))) %>%
-      layout(legend = list(orientation = 'h', x = 0.2, y = 1.1))
+     layout(legend = list(orientation = 'h', x = 0.2, y = 1.1, font=list(size=18)))
       }
   }
 })
@@ -234,16 +237,18 @@ plotlyOutput('plotly')
 Covid e outras doenças {data-navmenu="Análise de dados" data-icon="fa-search"}
 =====================================  
 
-Column{.tabset}
+Column
 --------------------------------------------------------------
 
-### **SRAG - Casos**
-
+### SRAG - Casos
 
 ```{r, fig.pos="center", fig.width=8, fig.height=6}
 p('Queremos ilustrar o impacto da Covid-19 nas estatísticas de Síndrome Respiratória Aguda Grave (SRAG). Para isso, temos os dados da SRAG no estado de SP no ano de 2019 e os dados da SRAG no estado até o começo de Agosto deste ano.') 
 
-p('Sobre a SRAG temos este trecho do boletim epidemiológico feito pelo Núcleo de Vigilância Epidemiológica Hospitalar com a Santa Casa de Misericórdia de Goiânia: "Dentre os principais agentes etiológicos que resultam em SRAG, estão os vírus (influenza A, dengue, vírus sincicial respiratório, adenovírus, hantavírus e coronavírus), e outros agentes (pneumococos,outrasbactérias, Legionella sp., leptospirose, etc.)...Considera-se caso suspeito de SRAG todos os indivíduos de qualquer idade com doença respiratória aguda caracterizada por febre superior a 38ºC, tosse e dispneia, acompanhadas ou não de dor de garganta ou manifestações gastrointestinais. Além disso, devem ser observados os seguintes sinais e sintomas: aumento d afrequência respiratória (>25 rpm) e hipotensão em relação à pressão arterial habitual do paciente. Em crianças, acrescentam-se os seguintes sintomas: batimentos de asa de nariz, cianose, tiragem intercostal,desidratação e inapetência"')
+p('Sobre a SRAG, temos este trecho do boletim epidemiológico feito pelo Núcleo de Vigilância Epidemiológica Hospitalar com a Santa Casa de Misericórdia de Goiânia: "Dentre os principais agentes etiológicos que resultam em SRAG, estão os vírus (influenza A, dengue, vírus sincicial respiratório, adenovírus, hantavírus e coronavírus), e outros agentes (pneumococos,outrasbactérias, Legionella sp., leptospirose, etc. Considera-se caso suspeito de SRAG todos os indivíduos de qualquer idade com doença respiratória aguda caracterizada por febre superior a 38ºC, tosse e dispneia, acompanhadas ou não de dor de garganta ou manifestações gastrointestinais. Além disso, devem ser observados os seguintes sinais e sintomas: aumento da frequência respiratória (>25 rpm) e hipotensão em relação à pressão arterial habitual do paciente. Em crianças, acrescentam-se os seguintes sintomas: batimentos de asa de nariz, cianose, tiragem intercostal, desidratação e inapetência"')
+
+# pula linha
+br()
 
 srag19 <- read_csv("dados/srag2019.csv")
 srag20 <- read.csv("dados/srag2020.csv")
@@ -268,15 +273,19 @@ ggplot(srag19_20) +
   theme_bw()
 ```
 
-### **SRAG - Causas**
-
+### SRAG - Causas
 
 ```{r, fig.pos="center", fig.width=8, fig.height=6}
 p('Existe um aumento descomunal no número de complicações por causas respiratórias no estado de São Paulo - e em todo Brasil, para ser mais exato - e nem chegamos ao final de 2020, definitivamente o termo "gripezinha" (ilação do presidente, inclusive) não reflete a gravidade do problema que estamos enfrentando.')
 
-srag20 <- srag20 %>% mutate(DUMMY = 1) %>% group_by(DT_NOTIFIC, CLASSI_FIN, EVOLUCAO, SEM_NOT) %>% 
+br()
+
+srag20 <- srag20 %>% 
+  mutate(DUMMY = 1) %>% 
+  group_by(DT_NOTIFIC, CLASSI_FIN, EVOLUCAO, SEM_NOT) %>% 
   summarise(Casos = sum(DUMMY)) %>% 
-  rename("Causa" = CLASSI_FIN, "Data" = DT_NOTIFIC, "Evolucao" = EVOLUCAO, "Semana" = SEM_NOT)
+  rename("Causa" = CLASSI_FIN, "Data" = DT_NOTIFIC, 
+         "Evolucao" = EVOLUCAO, "Semana" = SEM_NOT)
 
 ## Reorder fullname based on the the sum of the other columns
 srag20$Causa <- reorder(srag20$Causa, rowSums(srag20[-1]))
@@ -290,38 +299,47 @@ ggplot(srag20, aes(x = Semana, y = Casos, fill = as.factor(Causa))) +
   scale_fill_discrete(name = "Causas: ", labels = c("Influenza", "Outro Vírus Respiratório", "Outro Agente Etiológico", "SRAG não especificado", "COVID-19", "Info. faltante")) +
   theme(legend.position = "bottom")
 
-p('Podemos ver claramente o impacto da Covid-19 para o aumento do quadro de SRAG em 2020, sem contar que temos nesta classificação ainda SRAG não especificado, muito provavelmente Covid-19 em sua maioria (o Brasil tem uma taxa baíxissima de testes, média de 2,28 para cada 100 mil habitantes [1]) e temos uma significativa taxa de dados faltantes no preenchimento da ficha.')
+p('Podemos ver claramente a influência da Covid-19 na contabilização dos casos, sem contar que temos nesta classificação ainda SRAG não especificado (o Brasil tem uma taxa baíxissima de testes, média de 2,28 para cada 100 mil habitantes [1]) e temos dados faltantes no preenchimento da ficha.')
 ```
 
-Column
---------------------------------------------------------------
 
-### **Dengue**
+### Dengue
 
 ```{r}
+
 p("Uma (infelizmente) velha conhecida dos brasileiros é a dengue, podemos ver que a arbovirose também é bem menos letal que a Covid-19, enquanto a dengue tem uma letalidade registrada de aproximadamente 0,05% no estado de São Paulo, a doença do Coronavírus tem uma letalidade em torno de 3%.")
+
+br()
 
 ev_dengue <- read_csv2("dados/evolucao_dengue.csv")
 
 covid_comp <- covid %>% filter(Dia == "2020-08-19") %>% summarise(Casos = sum(casos), Obitos = sum(óbitos))
 
 covid_dengue <- tibble(Doença = c("Dengue", "Covid-19"),
-                       Casos = c(ev_dengue$Total[1], covid_comp[1] %>% unlist() %>% unname()),
-                        Obitos = c(ev_dengue$`?bito pelo agravo notificado`[1], covid_comp[2] %>% unlist() %>% unname()))
+                       Casos = c(ev_dengue$Total[1], covid_comp[1] %>% 
+                                   unlist() %>% 
+                                   unname()),
+                       Obitos = c(ev_dengue$`?bito pelo agravo notificado`[1],
+                                  covid_comp[2] %>% 
+                                    unlist() %>% 
+                                    unname()))
 
-covid_dengue <- covid_dengue %>% pivot_longer(-Doença, names_to = "Ocorrência", values_to = "Quantidade")
+covid_dengue <- covid_dengue %>% 
+  pivot_longer(-Doença, names_to = "Ocorrência", values_to = "Quantidade")
 
 options(scipen = 100000)
+
 ggplot(covid_dengue, aes(x = Doença, y = Quantidade, fill = `Ocorrência`)) +
   geom_bar(stat = "identity") +
   theme_bw() +
-  scale_fill_manual(values = c("salmon", "black"))+
+  scale_fill_manual(values = c("salmon", "black")) +
   labs(title = "Dengue x Covid-19", subtitle = "Números da dengue durante todo o ano de 2019 e de Covid-19 até o presente momento") +
   scale_y_continuous(limits = c(0, 800000))
 
+br()
+
 p('Ref.1: https://g1.globo.com/bemestar/coronavirus/noticia/2020/06/12/numeros-mostram-que-brasil-ainda-faz-brutalmente-menos-testes-para-coronavirus-do-que-deveria-estamos-no-escuro-diz-especialista.ghtml')
 ```
-
 
 Gráficos animados {data-icon="fa-chart-line"}
 =====================================  
@@ -343,75 +361,29 @@ Row {.tabset .tabset-fade}
     
 <img src="https://raw.githubusercontent.com/Elizemiku/PainelCovidUnicamp/master/dados/mortes.gif" alt="obitos"/>
 
-Nuvem de palavras dinâmica {data-icon="fa-hashtag"}
+Nuvem de palavras dinâmica {data-icon="fa-twitter"}
 =====================================  
 
-Inputs {.sidebar}
+Inputs {.sidebar data-width=260}
 -----------------------------------------------------------------------
 
-### Contas de algumas autoridades do País
+### **Contas de algumas autoridades do País:**
 
 ```{r}
-library("rtweet")
-library("tidyverse")
-library("wordcloud2")
-library("httpuv")
-
-#Keys de acesso
-api_key <- "QVbudD80ms2yc0FyOrzSd74Jq"
-api_secret_key <- "G8XGjoY91NoZ42fcweONb9iKmXLe0WkLf8U4ReeK4smDaFnk8x"
-access_token <- "143947934-hy5cYTCLZ14rW0UngS23sZeDNMI4TFS28xCDhsqA"
-access_token_secret <- "oU1tHKERX7NfrxzVz7jTuoT4YPf1KuLjzcnhp6S4bxvNX"
-
-##authenticate via web browser
-token <- create_token(
-  app = "PainelCovidUnicamp",
-  consumer_key = api_key,
-  consumer_secret = api_secret_key,
-  access_token = access_token,
-  access_secret = access_token_secret)
-
-#Palavras de interesse
-dicionario <- c("corona", "covid", "quarentena", "lockdown", "cloroquina", "casos", "ministros" ,"colapso",
-                "respiradores","isolamento horizontal","isolamento vertical","quarentena","hospital",
-                "campanha","isolamento social","distanciamento social","máscara", "epidemia",
-                "pandemia","contágio","confinamento","assintomático","OMS","saúde pública",
-                "pico","UTI","comorbidade","obesidade","diabete","doenças respiratórias",
-                "doenças do coração","cardíacos","diabéticos","pneumonia","vacina",
-                "casa","idosos","crianças","medidas","economia","Manaus","São Paulo",
-                "Rio de Janeiro","febre","dor de cabeça","saudade","luto","mortes","óbitos",
-                "aglomeração","casos graves","suspeita","casos confirmados","testes",
-                "subnotificação","solidariedade","doações","cestas básicas","risco","epicentro",
-                "comércio","home office","hospitais de campanha","auxílio emergencial","fique em casa",
-                "desemprego","empresários","Brasil","China","Itália","Estados Unidos","Espanha",
-                "França","suspensão do contrato de trabalho","leitos","países","infecção",
-                "contágio","contaminados","países","casos notificados","casos confirmados",
-                "casos descartados","pacientes curados","ciência","médicos","medicina",
-                "pesquisadores","salário","distanciamento","governadores","dinheiro público",
-                "sus","corrupção","responsabilidade","achatamento da curva","estatísticas",
-                "mortalidade","letalidade","transporte público","rodízio","lotação","enfermeiros",
-                "hidroxicloroquina","gripezinha","clima","cardiovascular","crise sanitária",
-                "cloroquina","álcool","lavar as mãos","medidas","caos social","fome","violência doméstica",
-                "cidades","favelas","microempresas","microempresário","funcionários","funcionários público",
-                "Suécia","depressão","escolas","shoppings","afastamento")
-
-dicionario <- unique(dicionario)
-
-contas <- c("jairbolsonaro","jdoriajr","wilsonwitzel","RomeuZema","EduardoLeite_","costa_rui","	
-            CarlosMoises","CamiloSantanaCE","PauloCamara40","ratinho_jr","ronaldocaiado","helderbarbalho",	
-            "FlavioDino","wdiaspi","joaoazevedolins","MauroMendes40","belivaldochagas","Casagrande_ES",	
-            "RenanFilho_","GovernoAlagoas","gladsoncameli","maurocarlesse","GovernoRO","celmarcosrocha",	
-            "Reinaldo45psdb","waldezoficial","antoniodenarium","AbrahamWeint","DamaresAlves",	
-            "PauloGuedesMin","TerezaCrisMS","SF_Moro","tarcisiogdf","OsmarTerra","indaiatubapref",	
-            "prefpauliniasp","prefsp","sumaresp","pref_sorocaba","jonasdonizette_")	
+br()
 
 pickerInput(
   inputId = "conta",
-  label = "Escolha até 4 contas para descobrir quais palavras foram digitadas durante a pandemia:",
+  label = "Escolha até 4 contas para descobrir quais palavras 
+  foram digitadas durante a pandemia:",
   choices = contas,
   multiple = TRUE,
-  selected = "jonasdonizette_",
+  selected = "jairbolsonaro",
   options = list(`max-options` = 4, title='Selecione uma conta'))
+
+br()
+
+p("Palavras encontradas nos últimos 1000 tweets de cada conta")
 
 ```
 
@@ -426,6 +398,9 @@ filtro_contas <- reactive({
     return()
   }
   else{
+  
+  dicionario <- unique(dicionario)
+  
   tibble(dicionario, freq = 
            str_count(paste(unlist(str_to_lower(as.character(
              get_timeline(input$conta, n=1000)[,"text"]))),
@@ -442,22 +417,28 @@ wordcloud2(filtro_contas(), size=4.9, minSize = 3.9, color='random-light', backg
 wordcloud2Output("nuvem")
 ```
 
-### Tabela de frenquências das palavras 
+### Tabela dinâmica
 ```{r}
-output$tabela<- renderDataTable({
+output$tabela<- DT::renderDT({
 
-filtro_contas() %>% arrange(desc(freq))
-  
+datatable(filtro_contas() %>% arrange(desc(freq)) %>% distinct(),
+  colnames = c('Dicionário de palavras' = 'dicionario', 
+               'Frequência' = 'freq'),
+  caption =  htmltools::tags$caption(
+    style = 'caption-side: top; text-align: left; color:blue; font-size: 16px',
+    'Tabela 1: ',
+    htmltools::em('Tabela de frequência da nuvem de palavras.',)
+  ))
 })
 
-DTOutput("tabela", height = "auto")
+DTOutput("tabela")  
 ```
 
 
 Sobre {data-icon="fa-info-circle"}
 =====================================  
 
-### Informações sobre o projeto: {.colored}
+### **Informações sobre o projeto:** {.colored}
 
 > Painel Covid Unicamp - AM091 é um site feito para o projeto da disciplina AM091 da Universidade Estadual de Campinas. O objetivo desse projeto constituiu-se em aproximar os alunos Elizabeth, Isabella e Vinícius do curso de Estatística, na aplicação da parte prática do conhecimento estatístico, com enfoque nos dados da Covid-19 no Estado de São Paulo. Este projeto, além de contribuir para a aprendizagem dos alunos também é uma contribuição para o país, demonstrando que todos estão se dedicando nesse tempo de Pandemia. <br/><br/>
 > Disciplina AM091 - Proposta 5: Coleta de informações/dados, Verificação de veracidade de dados/informações. Análise de dados usando ferramentas matemáticas/estatísticas, Divulgação das informações para o publico geral. <br/><br/>
@@ -478,3 +459,10 @@ SRAG:
 
 - https://opendatasus.saude.gov.br/dataset/bd-srag-2019 
 - https://opendatasus.saude.gov.br/dataset/bd-srag-2020
+
+```{r, echo=FALSE}
+# exemplo de inserção de imagem
+# htmltools::img(src = knitr::image_uri(file.path(R.home("doc"), "html", "logo.jpg")), 
+#                alt = 'logo', 
+#                style = 'position:absolute; top:0; right:0; padding:10px;')
+```
