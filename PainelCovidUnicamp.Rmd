@@ -234,7 +234,7 @@ plotlyOutput('plotly')
 Covid e outras doenças {data-navmenu="Análise de dados" data-icon="fa-search"}
 =====================================  
 
-Row{.tabset}
+Column{.tabset}
 --------------------------------------------------------------
 
 ### **SRAG - Casos**
@@ -292,6 +292,9 @@ ggplot(srag20, aes(x = Semana, y = Casos, fill = as.factor(Causa))) +
 
 p('Podemos ver claramente o impacto da Covid-19 para o aumento do quadro de SRAG em 2020, sem contar que temos nesta classificação ainda SRAG não especificado, muito provavelmente Covid-19 em sua maioria (o Brasil tem uma taxa baíxissima de testes, média de 2,28 para cada 100 mil habitantes [1]) e temos uma significativa taxa de dados faltantes no preenchimento da ficha.')
 ```
+
+Column
+--------------------------------------------------------------
 
 ### **Dengue**
 
