@@ -244,15 +244,49 @@ Sobre a SRAG temos este trecho do boletim epidemiológico feito pelo Núcleo de 
 "Dentre os principais agentes etiológicos que resultam em SRAG, estão os vírus (influenza A, dengue, vírus sincicial respiratório, adenovírus, hantavírus e coronavírus), e outros agentes (pneumococos,outrasbactérias, Legionella sp., leptospirose, etc.) ... Considera-se caso suspeito de SRAG todos os indivíduos de qualquer idade com doença respiratória aguda caracterizada por febre superior a 38ºC, tosse e dispneia, acompanhadas ou não de dor de garganta ou manifestações gastrointestinais. Além disso, devem ser observados os seguintes sinais e sintomas: aumento d afrequência respiratória (>25 rpm) e hipotensão em relação à pressão arterial habitual do paciente. Em crianças, acrescentam-se os seguintes sintomas: batimentos de asa de nariz, cianose, tiragem intercostal,desidratação e inapetência"
 
 ```{r}
-#comparação
+srag19 <- read_csv("dados/srag2019.csv")
+srag20 <- read.csv("dados/srag2020.csv")
+
+srag20$DT_NOTIFIC <- as.Date(srag20$DT_NOTIFIC, "%Y-%m-%d")
+
+estatisticas_moveis <- function(x){
+  media = rep(NA, 6)
+  for(i in 7:length(x)){
+    media = c(media, sum(x[i:(i-6)])/7)
+  }
+  return(media)
+}
+
+srag19_20 <- tibble(ANO = c("2019", "2020"), CASOS = c(nrow(srag19), nrow(srag20)))
+
+ggplot(srag19_20) +
+  geom_col(aes(x = ANO, y = CASOS), fill = "darkred", col = "black")+
+  labs(x = "Ano", y = "Total de casos", title = "Síndrome Respiratória Aguda Grave", 
+       subtitle = "Casos de SRAG no Estado de São Paulo",
+       caption = "Fonte: DataSUS")+
+  theme_bw()
 ```
+
+Existe uma diferença colossal no número de complicações respiratórias no estado de São Paulo - e em todo Brasil, para ser mais correto - e nem chegamos ao final de 2020, definitivamente o termo "gripezinha" (ilação do presidente, inclusive) não reflete a gravidade do problema que estamos enfrentando. 
 
 ```{r}
-#srag2020 e as causas 
+srag20 <- srag20 %>% mutate(DUMMY = 1) %>% group_by(DT_NOTIFIC, CLASSI_FIN, EVOLUCAO, SEM_NOT) %>% 
+  summarise(Casos = sum(DUMMY)) %>% 
+  rename("Causa" = CLASSI_FIN, "Data" = DT_NOTIFIC, "Evolucao" = EVOLUCAO, "Semana" = SEM_NOT)
+
+## Reorder fullname based on the the sum of the other columns
+srag20$Causa <- reorder(srag20$Causa, rowSums(srag20[-1]))
+
+ggplot(srag20, aes(x = Semana, y = Casos, fill = as.factor(Causa))) +
+  geom_bar(position = "stack", stat = "identity") +
+  theme_bw() +
+  labs(title = "Causas da SRAG em 2020",
+       subtitle = "Casos semanais agrupados pela causa", 
+       caption = "Fonte: DataSUS") +
+  scale_fill_discrete(name = "Causa", labels = c("Influenza", "Outro Vírus Respiratório", "Outro Agente Etiológico", "SRAG não especificado", "COVID-19", "Info. faltante")) 
 ```
 
-No início da pandemia, não era raro ouvirmos certos comentários infundados comparando a Covid-19 com outras doenças conhecidas, como por exemplo a gripe - o termo "gripezinha" foi uma ilação do presidente, inclusive - No intuito de naturalizar a gravidade do problema que estamos enfrentando. 
-
+Podemos ver claramente a influência da Covid-19 na contabilização dos casos, sem contar que temos nesta classificação ainda SRAG não especificado (o Brasil tem uma taxa baíxissima de testes, média de 2,28 para cada 100 mil habitantes [1]) e temos dados faltantes no preenchimento da ficha.
 
 Gráficos animados {data-icon="fa-chart-line"}
 =====================================  
