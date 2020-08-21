@@ -208,11 +208,18 @@ output$plotly <- renderPlotly({
                    panel.grid.minor = element_line(colour = "gray",
                                                    size = 1,
                                                    linetype = "solid"))
-          
-          covid_plot1 <- ggplotly(covid_plot1) %>% 
+          if(input$Opcao == "mês"){
+            covid_plot1 <- ggplotly(covid_plot1) %>% 
+            config(displayModeBar = FALSE) %>%
+            layout(legend = list(orientation = 'h', x = 0.2, y = 1.1, font=list(size=18)),
+                   xaxis = list(tickvals = c(1, 2, 3, 4, 5, 6, 7, 8), 
+                               ticktext = c("Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago"))) 
+          }else{
+            covid_plot1 <- ggplotly(covid_plot1) %>% 
             config(displayModeBar = FALSE) %>%
             layout(legend = 
                        list(orientation = 'h', x = 0.2, y = 1.1, font=list(size=18))) 
+          }
           covid_plot1
         }
         else{
@@ -259,10 +266,21 @@ output$plotly <- renderPlotly({
                 panel.grid.minor = element_line(colour = "gray",
                                                 size = 1,
                                                 linetype = "solid"))
-        covid_plot3 <- ggplotly(covid_plot3) %>%
-          config(displayModeBar = FALSE) %>%
-          layout(legend = list(orientation = 'h', x = 0.2, y = 1.1, font=list(size=18))) 
         
+          if(input$Opcao == "mês"){
+            covid_plot3 <- ggplotly(covid_plot3) %>%
+            config(displayModeBar = FALSE) %>%
+            layout(legend = list(orientation = 'h', x = 0.2, y = 1.1, font=list(size=18)),
+            xaxis = list(tickvals = c(1, 2, 3, 4, 5, 6, 7, 8), 
+                            ticktext = c("Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago"))) 
+          }else{
+            covid_plot3 <- ggplotly(covid_plot3) %>%
+            config(displayModeBar = FALSE) %>%
+            layout(legend = list(orientation = 'h', x = 0.2, y = 1.1, font=list(size=18)),
+            xaxis = list(tickvals = c(1, 2, 3, 4, 5, 6, 7, 8), 
+                            ticktext = c("Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago"))) 
+          }
+
         covid_plot3
       }
       else{
