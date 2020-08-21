@@ -5,8 +5,8 @@ account: elizemiku
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 2683665
-bundleId: 3539842
+bundleId: 3540207
 url: https://elizemiku.shinyapps.io/PainelCovidUnicamp/
-when: 1597965206.21791
+when: 1597975169.40242
 asMultiple: FALSE
 asStatic: FALSE

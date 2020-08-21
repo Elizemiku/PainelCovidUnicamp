@@ -4,7 +4,6 @@ runtime: shiny
 output:
   flexdashboard::flex_dashboard:
     vertical_layout: fill
-    source_code: embed
     social: menu
     navbar:
     - title: Github
@@ -100,6 +99,8 @@ covid <- read_csv2(link)
 
 # deixando o nome das colunas bonitinhos
 covid <- covid %>% 
+  mutate(casos_100mil = round(casos/pop*100000, 2), 
+         óbitos_100mil = round(obitos/pop*100000, 2)) %>%
   rename("Semana_epidemiológica" = semana_epidem, 
          "Cidade" = nome_munic, "mês" = mes, "óbitos" = obitos, 
          "óbitos_novos" = obitos_novos, "Dia" = datahora)
@@ -112,18 +113,19 @@ estatisticas_moveis <- function(x){
   return(media)
 }
 
-covid <- covid %>% mutate(MediaNovos = 0,
-                          ObitosNovos = 0)
 ```
 
-Covid-19 {data-navmenu="Análise de dados" data-icon="fa-allergies"}
+Covid-19 {data-navmenu="Análise de dados" data-icon="fa-notes-medical"}
 =====================================  
 
 Inputs {.sidebar data-width=250}
 -----------------------------------------------------------------------
 
+### **Seja Bem-vindo!**
+
 ```{r sidebar_panel_covid}
-p(strong(h3("Seja Bem-Vindo!")))
+
+p(h5(strong("Escolha até 5 cidades para comparar:")))
 
 # seleção das Cidades
 pickerInput(
@@ -149,18 +151,23 @@ pickerInput(
 pickerInput(
    inputId = "Opcao", 
    label = "Formatos de data:", 
-   choices = c("Dia", "Semana_epidemiológica", "mês"), 
+   choices = c("Dia", "Semana Epidemiológica" = "Semana_epidemiológica", "Mês" = "mês"), 
    selected = "Dia",
    multiple = FALSE,
    options = list(title='Selecione o tipo da Data')
   )
    
 # seleção do eixo y 
+# seleção do eixo y 
 pickerInput(
   inputId = "ObitosCasos", 
   label = "Tipo de ocorrência:", 
-  choices = c("casos", "casos_novos", "óbitos", "óbitos_novos", 
-              "Novos Casos (Média Móvel)" = "MediaNovos", "Novos Óbitos (Média Móvel)" = "ObitosNovos"), 
+  choices = c("Casos" = "casos", "Novos Casos" = "casos_novos",
+              "Novos Casos (Média Móvel)" = "MediaNovos",
+              "Casos por 100 mil habitantes" = "casos_100mil", 
+              "Óbitos" = "óbitos", "Novos Óbitos" = " óbitos_novos",
+              "Novos Óbitos (Média Móvel)" = "ObitosNovos",
+              "Óbitos por 100 mil habitantes" = "óbitos_100mil"), 
   selected = "casos",
   multiple = FALSE,
   options = list(title='Selecione o tipo de ocorrência')
@@ -169,7 +176,7 @@ pickerInput(
 pickerInput(
   inputId = "escala", 
   label = "Escala",
-  choices = c("Linear", "Logarítmica"), 
+  choices = c("Linear", "Logarítmica(10)"), 
   selected="Linear", 
   multiple = FALSE)
 ```
@@ -183,8 +190,9 @@ Outputs
 
 # filtro reativo das cidades 
 filtro_cidades <- reactive({
-    covid %>% filter(Cidade %in% input$Cidade) %>% mutate(MediaNovos = estatisticas_moveis(.$casos_novos),
-                          ObitosNovos = estatisticas_moveis(.$óbitos_novos))
+    covid %>% filter(Cidade %in% input$Cidade) %>% 
+    mutate(MediaNovos = estatisticas_moveis(.$casos_novos),
+           ObitosNovos = estatisticas_moveis(.$óbitos_novos))
 })
 
 # graficos 
@@ -333,10 +341,10 @@ Column{.tabset}
 
 ### SRAG - Casos
 
-```{r, fig.pos="center", fig.width=8, fig.height=6}
-p('Queremos ilustrar o impacto da Covid-19 nas estatísticas de Síndrome Respiratória Aguda Grave (SRAG). Para isso, temos os dados da SRAG no estado de SP no ano de 2019 e os dados da SRAG no estado até o começo de Agosto deste ano.') 
+```{r, fig.pos="center"}
+p('Queremos ilustrar o impacto da Covid-19 nas estatísticas de Síndrome Respiratória Aguda Grave (SRAG). Para isso, temos os dados da SRAG no estado de SP no ano de 2019 e os dados da SRAG no estado de SP até o começo de Agosto deste ano.') 
 
-p('Sobre a SRAG, temos este trecho do boletim epidemiológico feito pelo Núcleo de Vigilância Epidemiológica Hospitalar com a Santa Casa de Misericórdia de Goiânia: "Dentre os principais agentes etiológicos que resultam em SRAG, estão os vírus (influenza A, dengue, vírus sincicial respiratório, adenovírus, hantavírus e coronavírus), e outros agentes (pneumococos,outrasbactérias, Legionella sp., leptospirose, etc. Considera-se caso suspeito de SRAG todos os indivíduos de qualquer idade com doença respiratória aguda caracterizada por febre superior a 38ºC, tosse e dispneia, acompanhadas ou não de dor de garganta ou manifestações gastrointestinais. Além disso, devem ser observados os seguintes sinais e sintomas: aumento da frequência respiratória (>25 rpm) e hipotensão em relação à pressão arterial habitual do paciente. Em crianças, acrescentam-se os seguintes sintomas: batimentos de asa de nariz, cianose, tiragem intercostal, desidratação e inapetência"')
+p('Sobre a SRAG, temos este trecho do boletim epidemiológico feito pelo Núcleo de Vigilância Epidemiológica Hospitalar com a Santa Casa de Misericórdia de Goiânia: "Dentre os principais agentes etiológicos que resultam em SRAG, estão os vírus (influenza A, dengue, vírus sincicial respiratório, adenovírus, hantavírus e coronavírus), e outros (agentes pneumococos,outrasbactérias, Legionella sp., leptospirose), etc. Considera-se caso suspeito de SRAG todos os indivíduos de qualquer idade com doença respiratória aguda caracterizada por febre superior a 38ºC, tosse e dispneia, acompanhadas ou não de dor de garganta ou manifestações gastrointestinais. Além disso, devem ser observados os seguintes sinais e sintomas: aumento da frequência respiratória (>25 rpm) e hipotensão em relação à pressão arterial habitual do paciente. Em crianças, acrescentam-se os seguintes sintomas: batimentos de asa de nariz, cianose, tiragem intercostal, desidratação e inapetência"')
 
 # pula linha
 br()
@@ -346,14 +354,6 @@ srag20 <- read.csv("dados/srag2020.csv")
 
 srag20$DT_NOTIFIC <- as.Date(srag20$DT_NOTIFIC, "%Y-%m-%d")
 
-estatisticas_moveis <- function(x){
-  media = rep(NA, 6)
-  for(i in 7:length(x)){
-    media = c(media, sum(x[i:(i-6)])/7)
-  }
-  return(media)
-}
-
 srag19_20 <- tibble(ANO = c("2019", "2020"), CASOS = c(nrow(srag19), nrow(srag20)))
 
 ggplot(srag19_20) +
@@ -362,11 +362,13 @@ ggplot(srag19_20) +
        subtitle = "Casos de SRAG no Estado de São Paulo",
        caption = "Fonte: DataSUS")+
   theme_bw()
+
+p('https://www.saude.go.gov.br/images/imagens_migradas/upload/arquivos/2017-07/bolepi_scmg_2017-061.pdf')
 ```
 
 ### SRAG - Causas
 
-```{r, fig.pos="center", fig.width=8, fig.height=6}
+```{r, fig.pos="center"}
 p('Existe um aumento descomunal no número de complicações por causas respiratórias no estado de São Paulo - e em todo Brasil, para ser mais exato - e nem chegamos ao final de 2020, definitivamente o termo "gripezinha" (ilação do presidente, inclusive) não reflete a gravidade do problema que estamos enfrentando.')
 
 br()
@@ -390,15 +392,19 @@ ggplot(srag20, aes(x = Semana, y = Casos, fill = as.factor(Causa))) +
   scale_fill_discrete(name = "Causas: ", labels = c("Influenza", "Outro Vírus Respiratório", "Outro Agente Etiológico", "SRAG não especificado", "COVID-19", "Info. faltante")) +
   theme(legend.position = "bottom")
 
-p('Podemos ver claramente a influência da Covid-19 na contabilização dos casos, sem contar que temos nesta classificação ainda SRAG não especificado (o Brasil tem uma taxa baíxissima de testes, média de 2,28 para cada 100 mil habitantes [1]) e temos dados faltantes no preenchimento da ficha.')
+p('Pode-se observar a influência da Covid-19 na contabilização dos casos, sem contar que temos nesta classificação ainda SRAG não especificado (o Brasil tem uma taxa baíxissima de testes, média de 2,28 para cada 100 mil habitantes) e temos dados faltantes no preenchimento da ficha.')
+
+p('https://g1.globo.com/bemestar/coronavirus/noticia/2020/06/12/numeros-mostram-que-brasil-ainda-faz-brutalmente-menos-testes-para-coronavirus-do-que-deveria-estamos-no-escuro-diz-especialista.ghtml')
 ```
 
+Column
+----------------------------------------------------------------------------------
 
 ### Dengue
 
 ```{r}
 
-p("Uma (infelizmente) velha conhecida dos brasileiros é a dengue, podemos ver que a arbovirose também é bem menos letal que a Covid-19, enquanto a dengue tem uma letalidade registrada de aproximadamente 0,05% no estado de São Paulo, a doença do Coronavírus tem uma letalidade em torno de 3%.")
+p("Uma doença - infelizmente, velha conhecida dos brasileiros é a dengue, podemos ver que a arbovirose também é bem menos letal que a Covid-19, enquanto a dengue tem uma letalidade registrada de aproximadamente 0,05% no estado de São Paulo, a doença do Coronavírus tem uma letalidade em torno de 3%.")
 
 br()
 
@@ -424,12 +430,9 @@ ggplot(covid_dengue, aes(x = Doença, y = Quantidade, fill = `Ocorrência`)) +
   geom_bar(stat = "identity") +
   theme_bw() +
   scale_fill_manual(values = c("salmon", "black")) +
-  labs(title = "Dengue x Covid-19", subtitle = "Números da dengue durante todo o ano de 2019 e de Covid-19 até o presente momento") +
+  labs(title = "Dengue x Covid-19", subtitle = "Números da dengue em 2019 e da Covid-19 até o presente momento") +
   scale_y_continuous(limits = c(0, 800000))
 
-br()
-
-p('Ref.1: https://g1.globo.com/bemestar/coronavirus/noticia/2020/06/12/numeros-mostram-que-brasil-ainda-faz-brutalmente-menos-testes-para-coronavirus-do-que-deveria-estamos-no-escuro-diz-especialista.ghtml')
 ```
 
 Gráficos animados {data-icon="fa-chart-line"}
@@ -467,7 +470,7 @@ br()
 
 pickerInput(
   inputId = "conta",
-  label = "Escolha até 4 opções para descobrir quais palavras que são relacionadas com a pandemia foram digitadas pelas contas abaixo:",
+  label = "Escolha até 4 contas para descobrir quais palavras relacionadas à pandemia foram encontradas nas contas destes usuários:",
   choices = contas,
   multiple = TRUE,
   selected = "jairbolsonaro",
@@ -532,8 +535,8 @@ Sobre {data-icon="fa-info-circle"}
 
 ### **Informações sobre o projeto:** {.colored}
 
-> Painel Covid Unicamp - AM091 é um site feito para o projeto da disciplina AM091 da Universidade Estadual de Campinas. O objetivo desse projeto constituiu-se em aproximar os alunos Elizabeth, Isabella e Vinícius do curso de Estatística, na aplicação da parte prática do conhecimento estatístico, com enfoque nos dados da Covid-19 no Estado de São Paulo. Este projeto, além de contribuir para a aprendizagem dos alunos também é uma contribuição para o país, demonstrando que todos estão se dedicando nesse tempo de Pandemia. <br/><br/>
-> Disciplina AM091 - Proposta 5: Coleta de informações/dados, Verificação de veracidade de dados/informações. Análise de dados usando ferramentas matemáticas/estatísticas, Divulgação das informações para o publico geral. <br/><br/>
+> Painel Covid Unicamp - AM091 é um site feito para o projeto da disciplina AM091 da Universidade Estadual de Campinas. O objetivo desse projeto constituiu-se em aproximar os alunos Elizabeth, Isabella e Vinícius do curso de Estatística, na aplicação da parte prática do conhecimento estatístico, com enfoque nos dados da Covid-19 no Estado de São Paulo. Este projeto, além de contribuir para a aprendizagem dos alunos também é uma contribuição para o país, demonstrando que todos estão se dedicando nesse tempo de pandemia. <br/><br/>
+> Disciplina AM091 - Proposta 5: Coleta de informações/dados, Verificação de veracidade de dados/informações. Análise de dados usando ferramentas matemáticas/estatísticas, Divulgação das informações para o público geral. <br/><br/>
 >Instituto de Matemática, Estatística e Computação Científica/ IMEEC <br/>
 >Universidade de Campinas / UNICAMP
 
@@ -552,3 +555,10 @@ SRAG:
 - https://opendatasus.saude.gov.br/dataset/bd-srag-2019 
 - https://opendatasus.saude.gov.br/dataset/bd-srag-2020
 
+\newline
+
+**Contato**:
+
+- Elizabeth Borgognoni Souto : borgobeth@gmail.com
+- Isabella Gomide Alves : isabella.gomide020@gmail.com
+- Vinícius Nascimento de Oliveira : vinicius.n.o@outlook.com.br
