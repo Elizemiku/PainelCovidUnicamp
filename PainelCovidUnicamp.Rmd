@@ -115,7 +115,7 @@ estatisticas_moveis <- function(x){
 
 ```
 
-Covid-19 {data-navmenu="Análise de dados" data-icon="fa-notes-medical"}
+Covid-19 no Estado de São Paulo {data-navmenu="Análise de dados" data-icon="fa-notes-medical"}
 =====================================  
 
 Inputs {.sidebar data-width=250}
@@ -143,8 +143,7 @@ pickerInput(
    label = "Tipo de gráfico:", 
    choices = c("Barras","Linhas"), 
    selected = "Linhas",
-   multiple = FALSE,
-   options = list(title='Selecione o tipo de Gráfico')
+   multiple = FALSE
    )
 
 # seleção do eixo x
@@ -153,8 +152,7 @@ pickerInput(
    label = "Formatos de data:", 
    choices = c("Dia", "Semana Epidemiológica" = "Semana_epidemiológica", "Mês" = "mês"), 
    selected = "Dia",
-   multiple = FALSE,
-   options = list(title='Selecione o tipo da Data')
+   multiple = FALSE
   )
    
 # seleção do eixo y 
@@ -169,8 +167,7 @@ pickerInput(
               "Novos Óbitos (Média Móvel)" = "ObitosNovos",
               "Óbitos por 100 mil habitantes" = "óbitos_100mil"), 
   selected = "casos",
-  multiple = FALSE,
-  options = list(title='Selecione o tipo de ocorrência')
+  multiple = FALSE
   )
 
 pickerInput(
@@ -470,7 +467,7 @@ br()
 
 pickerInput(
   inputId = "conta",
-  label = "Escolha até 4 contas para descobrir quais palavras relacionadas à pandemia foram encontradas nas contas destes usuários:",
+  label = "Escolha até 4 contas:",
   choices = contas,
   multiple = TRUE,
   selected = "jairbolsonaro",
@@ -478,10 +475,41 @@ pickerInput(
 
 br()
 
-p("As palavras encontradas são provenientes dos últimos 1000 tweets de cada conta.")
+br()
 
-p("Tente atualizar a página caso a nuvem de palavras não carregue!")
+br()
+
+p("Clique aqui para descobrir quais palavras relacionadas à pandemia foram encontradas nas contas dos usuários escolhidos:")
+
+actionButton(
+  inputId = "carregar", 
+  label = "Buscar", 
+  icon = icon("search"), 
+  width = 180)
+
+br()
+
+br()
+
+br()
+
+# mensagem caso a nuvem de palavras trave
+observeEvent(input$carregar,{
+showModal(modalDialog(
+        title = "Aviso",
+        "Espere um momento, caso a nuvem de palavras não carregue, tente atualizar a página!",
+        footer = modalButton("Ok"),
+        easyClose = TRUE,
+        fade = TRUE,
+        size = "s"
+      ))
+})
+
 ```
+
+
+As palavras encontradas são provenientes dos últimos 1000 tweets de cada conta. Em Tabela dinâmica podemos observar melhor a quantidade de vezes que cada palavra apareceu. 
+
 
 Column{.tabset}
 --------------------------------------------------------------
@@ -489,7 +517,7 @@ Column{.tabset}
 ### Nuvem de palavras 
 
 ```{r}
-filtro_contas <- reactive({
+filtro_contas <-  eventReactive(input$carregar,{
 
 dicionario <- unique(dicionario)
   
@@ -504,8 +532,9 @@ output$nuvem <- renderWordcloud2({
     return()
   }
   else{
-    wordcloud2(filtro_contas(), size=3.9, minSize = 2.5, 
-               color='random-light', backgroundColor="black")
+        wordcloud2(filtro_contas(), size = 0.5,
+                   color='random-light', backgroundColor="black")
+    
   }
 })
 
@@ -516,7 +545,10 @@ wordcloud2Output("nuvem")
 
 ```{r}
 output$tabela<- DT::renderDT({
-
+ if(is.null(input$conta)){
+    return()
+ }
+  else{
 datatable(filtro_contas() %>% arrange(desc(freq)),
   colnames = c('Dicionário de palavras' = 'dicionario', 
                'Frequência' = 'freq'),
@@ -525,6 +557,7 @@ datatable(filtro_contas() %>% arrange(desc(freq)),
     'Tabela 1: ',
     htmltools::em('Tabela de frequência da nuvem de palavras.',)
   ))
+  }
 })
 
 DTOutput("tabela")  
