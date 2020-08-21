@@ -104,8 +104,16 @@ covid <- covid %>%
          "Cidade" = nome_munic, "mês" = mes, "óbitos" = obitos, 
          "óbitos_novos" = obitos_novos, "Dia" = datahora)
 
+estatisticas_moveis <- function(x){
+  media = rep(NA, 6)
+  for(i in 7:length(x)){
+    media = c(media, sum(x[i:(i-6)])/7)
+  }
+  return(media)
+}
 
-
+covid <- covid %>% mutate(MediaNovos = 0,
+                          ObitosNovos = 0)
 ```
 
 Covid-19 {data-navmenu="Análise de dados" data-icon="fa-allergies"}
@@ -151,7 +159,8 @@ pickerInput(
 pickerInput(
   inputId = "ObitosCasos", 
   label = "Tipo de ocorrência:", 
-  choices = c("casos", "casos_novos", "óbitos", "óbitos_novos"), 
+  choices = c("casos", "casos_novos", "óbitos", "óbitos_novos", 
+              "Novos Casos (Média Móvel)" = "MediaNovos", "Novos Óbitos (Média Móvel)" = "ObitosNovos"), 
   selected = "casos",
   multiple = FALSE,
   options = list(title='Selecione o tipo de ocorrência')
@@ -174,7 +183,8 @@ Outputs
 
 # filtro reativo das cidades 
 filtro_cidades <- reactive({
-    covid %>%  filter(Cidade %in% input$Cidade) 
+    covid %>% filter(Cidade %in% input$Cidade) %>% mutate(MediaNovos = estatisticas_moveis(.$casos_novos),
+                          ObitosNovos = estatisticas_moveis(.$óbitos_novos))
 })
 
 # graficos 
