@@ -480,6 +480,7 @@ br()
 
 p("As palavras encontradas são provenientes dos últimos 1000 tweets de cada conta.")
 
+p("Tente atualizar a página caso a nuvem de palavras não carregue!")
 ```
 
 Column{.tabset}
@@ -503,7 +504,7 @@ output$nuvem <- renderWordcloud2({
     return()
   }
   else{
-    wordcloud2(filtro_contas(), size=4.9, minSize = 3.9, 
+    wordcloud2(filtro_contas(), size=3.9, minSize = 2.5, 
                color='random-light', backgroundColor="black")
   }
 })
