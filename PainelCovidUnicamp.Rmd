@@ -540,7 +540,7 @@ output$nuvem <- renderWordcloud2({
     return()
   }
   else{
-        wordcloud2(filtro_contas(), size = 0.5,
+        wordcloud2(filtro_contas(),
                    color='random-light', backgroundColor="black")
     
   }
