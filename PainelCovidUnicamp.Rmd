@@ -187,9 +187,17 @@ Outputs
 
 # filtro reativo das cidades 
 filtro_cidades <- reactive({
-    covid %>% filter(Cidade %in% input$Cidade) %>% 
-    mutate(MediaNovos = estatisticas_moveis(.$casos_novos),
-           ObitosNovos = estatisticas_moveis(.$óbitos_novos))
+    resultado <- covid %>% filter(Cidade %in% input$Cidade) %>% arrange(Cidade)
+    mediaCasos <- sapply(split(resultado, resultado$Cidade), function(x) estatisticas_moveis(x$casos_novos))
+    mediaObitos <- sapply(split(resultado, resultado$Cidade), function(x) estatisticas_moveis(x$óbitos_novos))
+    mediaNovos = c()
+    mediaMortes = c()
+    for(i in 1:length(input$Cidade)){
+      mediaNovos = c(mediaNovos, mediaCasos[,i])
+      mediaMortes = c(mediaMortes, mediaObitos[,i])
+    }
+    resultado <- resultado %>% mutate(MediaNovos = mediaNovos, ObitosNovos = mediaMortes)
+    resultado
 })
 
 # graficos 
@@ -401,7 +409,7 @@ Column
 
 ```{r}
 
-p("Uma doença - infelizmente, velha conhecida dos brasileiros é a dengue, podemos ver que a arbovirose também é bem menos letal que a Covid-19, enquanto a dengue tem uma letalidade registrada de aproximadamente 0,05% no estado de São Paulo, a doença do Coronavírus tem uma letalidade em torno de 3%.")
+p("Uma doença - infelizmente - velha conhecida dos brasileiros é a dengue, podemos ver que a arbovirose também é bem menos letal que a Covid-19, enquanto a dengue tem uma letalidade registrada de aproximadamente 0,05% no estado de São Paulo, a doença do Coronavírus tem uma letalidade em torno de 3%.")
 
 br()
 
